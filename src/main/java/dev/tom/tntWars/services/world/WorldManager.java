@@ -22,30 +22,26 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class WorldManager {
 
-    private static final Path TEMPLATE_DIR = Paths.get("");//Paths.get("map_templates"); // This is where the map templates are stored
-
-    // Creates the directory if it doesn't exist
-    static {
-        if (Files.notExists(TEMPLATE_DIR)) {
-            try {
-                Files.createDirectories(TEMPLATE_DIR);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     private static final List<String> IGNORED_FILES = Arrays.asList("uid.dat", "session.lock");
 
-    public CompletableFuture<World> cloneWorld(World world) {
+    public CompletableFuture<World> cloneMap(String mapName) {
+        World world = Bukkit.getWorld(mapName);
+        if (world == null) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("Map not found"));
+        }
+        String newName = mapName + "_" + UUID.randomUUID();
+        return cloneWorld(world, newName);
+    }
+
+    private CompletableFuture<World> cloneWorld(World world, String newName) {
         Path source = world.getWorldFolder().toPath();
-        Path target = getTemplateDir().resolve(world.getName() + "_" + UUID.randomUUID());
+        Path target = Paths.get("").resolve(newName); // "/newName
 
         return CompletableFuture.supplyAsync(() -> {
             copyFolder(source, target);
             return target;
         }).thenCompose(targetPath -> {
-            WorldCreator worldCreator = new WorldCreator(world.getName() + "_clone");
+            WorldCreator worldCreator = new WorldCreator(newName);
             worldCreator.generator(new EmptyChunkGenerator());
             worldCreator.generateStructures(false);
             worldCreator.type(WorldType.FLAT);
