@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +23,9 @@ public class WorldManager {
 
     private static final Path CLONED_MAPS_PATH = getClonedMapsPath();
 
+    private static final Path MAP_TEMPLATES_PATH = getMapTemplatesPath();
+
+
     // create clone world directory if it doesn't exist
     static {
         if(Files.notExists(CLONED_MAPS_PATH)){
@@ -34,9 +36,25 @@ public class WorldManager {
                 throw new RuntimeException(e.getMessage(), e);
             }
         }
+        if(Files.notExists(MAP_TEMPLATES_PATH)){
+            try {
+                Files.createDirectories(MAP_TEMPLATES_PATH);
+            } catch (IOException e) {
+                TntWarsPlugin.getPlugin(TntWarsPlugin.class).getLogger().severe("Failed to create map templates directory: " + e.getMessage());
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
     }
 
     private static final List<String> IGNORED_FILES = Arrays.asList("uid.dat", "session.lock");
+
+    public CompletableFuture<World> cloneMap(World template) {
+        if (template == null) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("Map not found"));
+        }
+        String newName = template.getName()+ "_" + UUID.randomUUID();
+        return cloneWorld(template, newName);
+    }
 
     public CompletableFuture<World> cloneMap(String mapName) {
         World world = Bukkit.getWorld(mapName);
@@ -100,8 +118,13 @@ public class WorldManager {
         }
     }
 
-    private static Path getClonedMapsPath() {
+    public static Path getClonedMapsPath() {
         File pluginDataFolder = TntWarsPlugin.getPlugin().getDataFolder();
         return pluginDataFolder.toPath().resolve("cloned_maps"); // This resolves to plugin folder/cloned_maps
+    }
+
+    public static Path getMapTemplatesPath() {
+        File pluginDataFolder = TntWarsPlugin.getPlugin().getDataFolder();
+        return pluginDataFolder.toPath().resolve("map_templates");
     }
 }
