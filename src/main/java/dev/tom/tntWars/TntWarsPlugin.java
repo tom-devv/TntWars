@@ -1,5 +1,6 @@
 package dev.tom.tntWars;
 
+import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import dev.tom.tntWars.controllers.DefaultGameController;
 import dev.tom.tntWars.controllers.DefaultTeamController;
 import dev.tom.tntWars.controllers.RandomMapProvider;
@@ -13,12 +14,11 @@ import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.objectweb.asm.tree.MultiANewArrayInsnNode;
 
-import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 public final class TntWarsPlugin extends JavaPlugin implements Listener {
 
@@ -26,35 +26,16 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
     private TeamController teamController;
     private MapController mapController;
 
-    public static World clone;
+    private static TntWarsPlugin plugin;
 
     @Override
     public void onEnable() {
-
-        getServer().getPluginManager().registerEvents(this, this);
-
-        WorldManager manager = new WorldManager();
-        World world = Bukkit.getWorld("world");
-        manager.cloneWorld(world).thenAcceptAsync(w -> {
-            Bukkit.getScheduler().runTask(this, () -> {
-                clone = w;
-                System.out.println("World cloned");
-            });
-        });
-
-
+        plugin = this;
+        initializeDefaultControllers();
     }
 
 
 
-    @EventHandler
-    public void toggleSneak(PlayerBucketEmptyEvent e){
-        System.out.println(
-                "Player " + e.getPlayer().getName() + " toggled sneak"
-        );
-        System.out.println(clone.getWorldFolder().getAbsolutePath());
-        e.getPlayer().teleport(new Location(clone, 0, 100, 0));
-    }
 
 
     private void initializeDefaultControllers(){
@@ -67,5 +48,21 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
 
+    }
+
+    public static TntWarsPlugin getPlugin() {
+        return plugin;
+    }
+
+    public GameController getGameController() {
+        return gameController;
+    }
+
+    public TeamController getTeamController() {
+        return teamController;
+    }
+
+    public MapController getMapController() {
+        return mapController;
     }
 }

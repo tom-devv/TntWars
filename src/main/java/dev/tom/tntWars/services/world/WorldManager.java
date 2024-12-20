@@ -15,12 +15,26 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class WorldManager {
+
+    private static final Path CLONED_MAPS_PATH = getClonedMapsPath();
+
+    // create clone world directory if it doesn't exist
+    static {
+        if(Files.notExists(CLONED_MAPS_PATH)){
+            try {
+                Files.createDirectories(CLONED_MAPS_PATH);
+            } catch (IOException e) {
+                TntWarsPlugin.getPlugin(TntWarsPlugin.class).getLogger().severe("Failed to create cloned maps directory: " + e.getMessage());
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
+    }
 
     private static final List<String> IGNORED_FILES = Arrays.asList("uid.dat", "session.lock");
 
@@ -33,21 +47,35 @@ public class WorldManager {
         return cloneWorld(world, newName);
     }
 
-    private CompletableFuture<World> cloneWorld(World world, String newName) {
+    private CompletableFuture<World> cloneWorld(World world, String newName){
         Path source = world.getWorldFolder().toPath();
-        Path target = Paths.get("").resolve(newName); // "/newName
+        Path target = getClonedMapsPath().resolve(newName);
 
+        // Async clone the directory
         return CompletableFuture.supplyAsync(() -> {
             copyFolder(source, target);
             return target;
-        }).thenCompose(targetPath -> {
-            WorldCreator worldCreator = new WorldCreator(newName);
-            worldCreator.generator(new EmptyChunkGenerator());
-            worldCreator.generateStructures(false);
-            worldCreator.type(WorldType.FLAT);
-            World clonedWorld = worldCreator.createWorld();
-            return CompletableFuture.completedFuture(clonedWorld);
-        });
+        }).thenComposeAsync(targetPath -> CompletableFuture.supplyAsync(() -> {
+            try {
+                // Sync create the world and return a future
+                return Bukkit.getScheduler().callSyncMethod(TntWarsPlugin.getPlugin(), () -> {
+                    System.out.println("Cloned world files to: " + targetPath.toString() + "\nCreating world creator now...");
+                    WorldCreator worldCreator = new WorldCreator(targetPath.toString());
+                    worldCreator.generator(new EmptyChunkGenerator());
+                    worldCreator.generateStructures(false);
+                    worldCreator.type(WorldType.FLAT);
+                    return worldCreator.createWorld();
+                }).get(); // blocks main thread waiting for future to complete
+            } catch (InterruptedException | ExecutionException e) {
+                TntWarsPlugin.getPlugin(TntWarsPlugin.class).getLogger().severe("Failed to clone world: " + e.getMessage());
+                throw new RuntimeException(e);
+            }
+        })
+        .exceptionally(e -> {
+            TntWarsPlugin.getPlugin(TntWarsPlugin.class).getLogger().severe("Failed to clone world: " + e.getMessage());
+            throw new RuntimeException(e);
+        })
+        );
     }
 
     public void copyFolder(Path src, Path dest) {
@@ -72,7 +100,8 @@ public class WorldManager {
         }
     }
 
-    public static Path getTemplateDir() {
-        return TEMPLATE_DIR;
+    private static Path getClonedMapsPath() {
+        File pluginDataFolder = TntWarsPlugin.getPlugin().getDataFolder();
+        return pluginDataFolder.toPath().resolve("cloned_maps"); // This resolves to plugin folder/cloned_maps
     }
 }
