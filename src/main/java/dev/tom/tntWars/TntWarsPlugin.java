@@ -15,6 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.objectweb.asm.tree.MultiANewArrayInsnNode;
 
 import java.io.IOException;
@@ -35,7 +36,10 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
         WorldManager manager = new WorldManager();
         World world = Bukkit.getWorld("world");
         manager.cloneWorld(world).thenAcceptAsync(w -> {
-            clone = w;
+            Bukkit.getScheduler().runTask(this, () -> {
+                clone = w;
+                System.out.println("World cloned");
+            });
         });
 
 
@@ -48,6 +52,7 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
         System.out.println(
                 "Player " + e.getPlayer().getName() + " toggled sneak"
         );
+        System.out.println(clone.getWorldFolder().getAbsolutePath());
         e.getPlayer().teleport(new Location(clone, 0, 100, 0));
     }
 

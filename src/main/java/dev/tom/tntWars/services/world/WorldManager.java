@@ -22,7 +22,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class WorldManager {
 
-    private static final Path TEMPLATE_DIR = Paths.get("map_templates"); // This is where the map templates are stored
+    private static final Path TEMPLATE_DIR = Paths.get("");//Paths.get("map_templates"); // This is where the map templates are stored
 
     // Creates the directory if it doesn't exist
     static {
