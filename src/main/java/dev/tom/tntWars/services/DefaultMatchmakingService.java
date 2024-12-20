@@ -1,4 +1,4 @@
 package dev.tom.tntWars.services;
 
-public class MatchmakingService {
+public class DefaultMatchmakingService {
 }

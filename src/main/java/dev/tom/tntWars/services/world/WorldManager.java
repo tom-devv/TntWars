@@ -1,60 +1,82 @@
-package dev.tom.tntWars.services;
+package dev.tom.tntWars.services.world;
 
+import dev.tom.tntWars.TntWarsPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.stream.Stream;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class WorldManager {
 
-    private static final String TEMPLATE_DIR_NAME = "map_templates"; // This is where the map templates are stored
+    private static final Path TEMPLATE_DIR = Paths.get("map_templates"); // This is where the map templates are stored
+
+    // Creates the directory if it doesn't exist
+    static {
+        if (Files.notExists(TEMPLATE_DIR)) {
+            try {
+                Files.createDirectories(TEMPLATE_DIR);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     private static final List<String> IGNORED_FILES = Arrays.asList("uid.dat", "session.lock");
 
-    public World cloneWorld(World world) throws IOException {
-        File source = world.getWorldFolder();
-        File target = new File(Bukkit.getWorldContainer(), world.getName() + "_clone");
+    public CompletableFuture<World> cloneWorld(World world) {
+        Path source = world.getWorldFolder().toPath();
+        Path target = getTemplateDir().resolve(world.getName() + "_" + UUID.randomUUID());
 
-        cloneWorldFiles(source, target);
-
-        return new WorldCreator(world.getName() + "_clone").createWorld();
-
+        return CompletableFuture.supplyAsync(() -> {
+            copyFolder(source, target);
+            return target;
+        }).thenCompose(targetPath -> {
+            WorldCreator worldCreator = new WorldCreator(world.getName() + "_clone");
+            worldCreator.generator(new EmptyChunkGenerator());
+            worldCreator.generateStructures(false);
+            worldCreator.type(WorldType.FLAT);
+            World clonedWorld = worldCreator.createWorld();
+            return CompletableFuture.completedFuture(clonedWorld);
+        });
     }
 
-    private void cloneWorldFiles(File source, File target) throws IOException {
-        if (IGNORED_FILES.contains(source.getName())) {
-            return;
-        }
-
-        if (source.isDirectory()) {
-            if (!target.exists() && !target.mkdirs()) {
-                throw new IOException("Couldn't create world directory!");
+    public void copyFolder(Path src, Path dest) {
+        try {
+            try (Stream<Path> stream = Files.walk(src)) {
+                stream.forEach(source -> {
+                    if (IGNORED_FILES.contains(source.getFileName().toString())) return;
+                    copy(source, dest.resolve(src.relativize(source)));
+                });
             }
-
-            String[] files = source.list();
-            if (files != null) {
-                for (String file : files) {
-                    cloneWorldFiles(new File(source, file), new File(target, file));
-                }
-            }
-        } else {
-            try (InputStream in = Files.newInputStream(source.toPath());
-                 OutputStream out = Files.newOutputStream(target.toPath())) {
-                byte[] buffer = new byte[1024];
-                int length;
-                while ((length = in.read(buffer)) > 0) {
-                    out.write(buffer, 0, length);
-                }
-            }
+        }catch (IOException e){
+            TntWarsPlugin.getPlugin(TntWarsPlugin.class).getLogger().severe("Failed to copy world: " + e.getMessage());
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
+    private void copy(Path source, Path dest) {
+        try {
+            Files.copy(source, dest, REPLACE_EXISTING);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
 
+    public static Path getTemplateDir() {
+        return TEMPLATE_DIR;
+    }
 }

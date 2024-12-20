@@ -1,4 +1,4 @@
-package dev.tom.tntWars.events;
+package dev.tom.tntWars.events.game;
 
 public class GameStartEvent {
 }
