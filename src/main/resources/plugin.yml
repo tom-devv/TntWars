@@ -1,5 +1,5 @@
-name: TntWars
-version: '1.0.0'
+name: ProjectLaz
+version: ${version}
 main: dev.tom.tntWars.TntWarsPlugin
 api-version: '1.21'
 authors: [ tom ]
