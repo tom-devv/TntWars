@@ -1,0 +1,5 @@
+name: TntWars
+version: '1.0.0'
+main: dev.tom.tntWars.TntWars
+api-version: '1.21'
+authors: [tom]
