@@ -14,6 +14,13 @@ repositories {
 }
 
 dependencies {
+    implementation("org.spongepowered:configurate-yaml:4.1.2")
+
+    implementation("com.github.javafaker:javafaker:1.0.2") {
+        exclude(module = "snakeyaml")
+    }
+    implementation("org.yaml:snakeyaml:1.26")
+
     compileOnly("io.papermc.paper:paper-api:${minecraftVersion}-R0.1-SNAPSHOT")
 }
 
@@ -38,6 +45,7 @@ tasks.shadowJar {
     manifest {
         attributes["paperweight-mappings-namespace"] = "mojang"
     }
+
     archiveBaseName.set("ProjectLazer")
     archiveClassifier.set("")
     archiveVersion.set(version.toString())

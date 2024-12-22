@@ -1,15 +1,21 @@
 package dev.tom.tntWars.models.game;
 
+import dev.tom.tntWars.TntWarsPlugin;
 import dev.tom.tntWars.models.Map;
+import dev.tom.tntWars.utils.NameGenerator;
+
+import java.util.UUID;
 
 public class Game {
 
+    private final String gameId;
     private final GameSettings settings;
     private Map map;
     private GameState state;
 
     public Game(GameSettings settings){
         this.settings = settings;
+        this.gameId = NameGenerator.generateName();
     }
 
     public Map getMap() {

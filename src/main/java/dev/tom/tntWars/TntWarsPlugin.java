@@ -1,12 +1,11 @@
 package dev.tom.tntWars;
 
+import com.github.javafaker.Faker;
 import dev.tom.tntWars.controllers.DefaultGameController;
 import dev.tom.tntWars.controllers.DefaultMapController;
 import dev.tom.tntWars.controllers.DefaultTeamController;
 import dev.tom.tntWars.interfaces.MapController;
-import dev.tom.tntWars.services.map.RandomMapProvider;
 import dev.tom.tntWars.interfaces.GameController;
-import dev.tom.tntWars.interfaces.MapProvider;
 import dev.tom.tntWars.interfaces.TeamController;
 import dev.tom.tntWars.services.world.WorldManager;
 import org.bukkit.Bukkit;
@@ -21,6 +20,8 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
     private GameController gameController;
     private TeamController teamController;
     private MapController mapController;
+
+    private static final Faker faker = new Faker();
 
     private static TntWarsPlugin plugin;
 
@@ -54,6 +55,10 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
 
     }
 
+    public static Faker getFaker() {
+        return faker;
+    }
+
     public static TntWarsPlugin getPlugin() {
         return plugin;
     }
@@ -66,7 +71,4 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
         return teamController;
     }
 
-    public MapProvider getMapProvider() {
-        return mapProvider;
-    }
 }
