@@ -2,7 +2,7 @@ package dev.tom.tntWars.controllers;
 
 import dev.tom.tntWars.TntWarsPlugin;
 import dev.tom.tntWars.interfaces.GameController;
-import dev.tom.tntWars.models.Game;
+import dev.tom.tntWars.models.game.Game;
 
 public class DefaultGameController extends Controller implements GameController {
 

@@ -1,6 +1,6 @@
 package dev.tom.tntWars.interfaces;
 
-import dev.tom.tntWars.models.Game;
+import dev.tom.tntWars.models.game.Game;
 
 public interface GameController {
 

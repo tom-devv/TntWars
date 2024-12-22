@@ -9,7 +9,13 @@ import org.bukkit.World;
  */
 public class Map {
 
-    public Map(World world){
+    private final World world;
 
+    public Map(World world){
+        this.world = world;
+    }
+
+    public World getWorld() {
+        return world;
     }
 }
