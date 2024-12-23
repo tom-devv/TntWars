@@ -3,11 +3,18 @@ package dev.tom.tntWars.controllers;
 import dev.tom.tntWars.TntWarsPlugin;
 import dev.tom.tntWars.interfaces.GameController;
 import dev.tom.tntWars.models.game.Game;
+import dev.tom.tntWars.models.game.GameSettings;
 
 public class DefaultGameController extends Controller implements GameController {
 
     public DefaultGameController(TntWarsPlugin plugin) {
         super(plugin);
+    }
+
+
+    @Override
+    public Game createGame(GameSettings settings) {
+        return null;
     }
 
     @Override
