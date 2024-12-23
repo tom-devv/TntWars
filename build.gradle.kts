@@ -49,9 +49,8 @@ tasks.shadowJar {
     archiveBaseName.set("ProjectLazer")
     archiveClassifier.set("")
     archiveVersion.set(version.toString())
-
-    destinationDirectory.set(file("/home/kynes/PaperServer/plugins"))
 }
+
 
 tasks.processResources {
     filesMatching("plugin.yml") {
@@ -59,5 +58,26 @@ tasks.processResources {
             "version" to project.version,
             "description" to project.description
         )
+    }
+}
+
+
+tasks.register("buildPlugin"){
+    group = "build"
+    description = "Builds the plugin and copies it to the server plugins folder"
+    doLast {
+        val shadowJarTask = tasks.named("shadowJar", com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class.java).get()
+        val originalDestination = shadowJarTask.destinationDirectory.get()
+
+        println("Current destination directory: $originalDestination")
+
+        // Relocate the shadow JAR destination directory
+        shadowJarTask.destinationDirectory.set(file("/home/kynes/PaperServer/plugins"))
+        println("Relocated destination directory: ${shadowJarTask.destinationDirectory.get()}")
+
+        // Execute the shadowJar task
+        shadowJarTask.actions.forEach { action ->
+            action.execute(shadowJarTask)
+        }
     }
 }
