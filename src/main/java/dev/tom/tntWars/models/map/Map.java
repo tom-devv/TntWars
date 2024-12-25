@@ -1,4 +1,4 @@
-package dev.tom.tntWars.models;
+package dev.tom.tntWars.models.map;
 
 
 import org.bukkit.World;

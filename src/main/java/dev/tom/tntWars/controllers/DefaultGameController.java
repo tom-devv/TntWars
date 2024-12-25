@@ -2,8 +2,12 @@ package dev.tom.tntWars.controllers;
 
 import dev.tom.tntWars.TntWarsPlugin;
 import dev.tom.tntWars.interfaces.GameController;
+import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.models.game.Game;
 import dev.tom.tntWars.models.game.GameSettings;
+
+import java.util.Collection;
+import java.util.Optional;
 
 public class DefaultGameController extends Controller implements GameController {
 
@@ -13,14 +17,25 @@ public class DefaultGameController extends Controller implements GameController 
 
 
     @Override
-    public Game createGame(GameSettings settings) {
-        return null;
+    public Optional<Game> findGame(GameSettings settings) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Game createGame(Collection<Team> teams, GameSettings settings) {
+        return new Game(settings, teams);
     }
 
     @Override
     public void startGame(Game game) {
+        Collection<Team> teams = game.getTeams();
 
     }
+
+    private void sendTeamsToGame(Game game){
+
+    }
+
 
     @Override
     public void endGame(Game game) {

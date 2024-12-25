@@ -14,12 +14,13 @@ public class RandomTeamProvider extends TeamProvider {
     }
 
     @Override
-    public void populateTeams() {
+    public Collection<Team> populateTeams() {
         clearTeams();
         for (UUID uuid : getPlayers()) {
             Team team = getTeams().get((int) (Math.random() * getTeams().size()));
             team.addPlayer(uuid);
         }
+        return getTeams();
     }
 
     @Override

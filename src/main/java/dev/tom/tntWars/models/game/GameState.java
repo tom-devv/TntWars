@@ -1,12 +1,33 @@
 package dev.tom.tntWars.models.game;
 
 public enum GameState {
+    /**
+     * The game is not active and should not have any players yet
+     */
+    INACTIVE,
+    /**
+     * The game is active and players are playing
+     */
     ACTIVE,
+    /**
+     * The game is paused and players are not playing
+     */
     PAUSED,
-    ENDED;
+    /**
+     * The game has ended and players are not playing
+     */
+    ENDED,
+    /**
+     * The game state is unknown and something bad has happened
+     */
+    UNKNOWN;
 
     public boolean isTransitionAllowed(GameState newState) {
         switch (this) {
+            case UNKNOWN:
+                return false;
+            case INACTIVE:
+                return newState == ACTIVE;
             case ACTIVE:
                 return newState == PAUSED || newState == ENDED;
             case PAUSED:
@@ -20,6 +41,8 @@ public enum GameState {
 
     public GameState getNextState() {
         switch (this) {
+            case INACTIVE:
+                return ACTIVE;
             case ACTIVE:
                 return PAUSED;
             case PAUSED:
@@ -27,20 +50,20 @@ public enum GameState {
             case ENDED:
                 return ENDED;
             default:
-                return ENDED;
+                return UNKNOWN;
         }
     }
 
     public GameState getPreviousState() {
         switch (this) {
-            case ACTIVE:
-                return ACTIVE;
+            case INACTIVE, ACTIVE:
+                return INACTIVE;
             case PAUSED:
                 return ACTIVE;
             case ENDED:
                 return PAUSED;
             default:
-                return ACTIVE;
+                return UNKNOWN;
         }
     }
 }

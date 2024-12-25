@@ -1,14 +1,25 @@
 package dev.tom.tntWars.services;
 
+import dev.tom.tntWars.TntWarsPlugin;
 import dev.tom.tntWars.interfaces.MatchmakingService;
 import dev.tom.tntWars.models.Team;
+import dev.tom.tntWars.models.game.Game;
+import dev.tom.tntWars.models.game.GameSettings;
 import dev.tom.tntWars.services.team.TeamProvider;
 
 import java.util.*;
 
 public class DefaultMatchmakingService implements MatchmakingService {
 
+    private final TeamProvider teamProvider;
+    private final GameSettings gameSettings;
+
     private final Queue<UUID> queue = new LinkedList<>();
+
+    public DefaultMatchmakingService(TeamProvider teamProvider, GameSettings gameSettings) {
+        this.teamProvider = teamProvider;
+        this.gameSettings = gameSettings;
+    }
 
     /**
      * Add a player to the matchmaking queue.
@@ -41,13 +52,11 @@ public class DefaultMatchmakingService implements MatchmakingService {
      */
     @Override
     public void startGameWithTeams(TeamProvider teamProvider) {
-        //TODO: notify gamecontroller that a game is ready to start
-//        if(queue.size() >= teamProvider.minimumPlayersRequired()) {
-//            clearQueue();
-//            return Optional.of(teamProvider.getTeams());
-//        } else {
-//            return Optional.empty();
-//        }
+        if(queue.size() <= teamProvider.minimumPlayersRequired()) return;
+        clearQueue();
+        Collection<Team> teams = teamProvider.populateTeams();
+        Game game = TntWarsPlugin.getPlugin().getGameController().createGame(teams, gameSettings); // createGame requires game Settings
+        TntWarsPlugin.getPlugin().getGameController().startGame(game);
     }
 
     /**
@@ -67,4 +76,13 @@ public class DefaultMatchmakingService implements MatchmakingService {
     public Queue<UUID> getQueue() {
         return this.queue;
     }
+
+    public GameSettings getGameSettings() {
+        return gameSettings;
+    }
+
+    public TeamProvider getTeamProvider() {
+        return teamProvider;
+    }
 }
+

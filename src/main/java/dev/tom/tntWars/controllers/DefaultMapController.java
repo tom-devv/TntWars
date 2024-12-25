@@ -4,7 +4,7 @@ import dev.tom.tntWars.TntWarsPlugin;
 import dev.tom.tntWars.interfaces.MapController;
 import dev.tom.tntWars.interfaces.MapProvider;
 import dev.tom.tntWars.models.game.Game;
-import dev.tom.tntWars.models.Map;
+import dev.tom.tntWars.models.map.Map;
 import dev.tom.tntWars.models.game.GameState;
 import org.bukkit.entity.Player;
 

@@ -1,5 +1,7 @@
 package dev.tom.tntWars.services.team;
 
+import dev.tom.tntWars.models.Team;
+
 import java.util.Collection;
 import java.util.UUID;
 
@@ -15,7 +17,7 @@ public class BalancedTeamProvider extends TeamProvider {
     }
 
     @Override
-    public void populateTeams() {
-
+    public Collection<Team> populateTeams() {
+        return null; // TODO imp
     }
 }

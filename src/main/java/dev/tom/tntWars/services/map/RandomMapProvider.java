@@ -1,7 +1,7 @@
 package dev.tom.tntWars.services.map;
 
 import dev.tom.tntWars.interfaces.MapProvider;
-import dev.tom.tntWars.models.Map;
+import dev.tom.tntWars.models.map.Map;
 import dev.tom.tntWars.services.world.WorldManager;
 import org.bukkit.World;
 

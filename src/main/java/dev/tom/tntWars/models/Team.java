@@ -11,6 +11,10 @@ public class Team {
 
     }
 
+    public int size(){
+        return playerUUIDs.size();
+    }
+
     public void removePlayer(UUID playerUUID){
         playerUUIDs.remove(playerUUID);
     }

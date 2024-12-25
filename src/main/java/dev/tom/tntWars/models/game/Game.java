@@ -1,22 +1,25 @@
 package dev.tom.tntWars.models.game;
 
-import dev.tom.tntWars.TntWarsPlugin;
-import dev.tom.tntWars.models.Map;
+import dev.tom.tntWars.models.map.Map;
+import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.utils.NameGenerator;
 
-import java.util.UUID;
+import java.util.Collection;
 
 public class Game {
 
     private final String gameId;
     private final GameSettings settings;
+    private final Collection<Team> teams;
     private Map map;
     private GameState state;
 
-    public Game(GameSettings settings){
+    public Game(GameSettings settings, Collection<Team> teams){
         this.settings = settings;
+        this.teams = teams;
         this.gameId = NameGenerator.generateName();
     }
+
 
     public Map getMap() {
         return map;
@@ -43,6 +46,10 @@ public class Game {
             throw new IllegalStateException("Map is already set for this game.");
         }
         this.map = map;
+    }
+
+    public Collection<Team> getTeams() {
+        return teams;
     }
 
     public GameState getState() {

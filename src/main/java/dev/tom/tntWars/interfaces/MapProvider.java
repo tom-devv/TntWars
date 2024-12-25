@@ -1,6 +1,6 @@
 package dev.tom.tntWars.interfaces;
 
-import dev.tom.tntWars.models.Map;
+import dev.tom.tntWars.models.map.Map;
 
 /**
  * The MapProvider is responsible for providing the map.

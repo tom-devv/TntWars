@@ -25,8 +25,6 @@ public class WorldManager {
 
     private static final Path MAP_TEMPLATES_PATH = getMapTemplatesPath();
 
-
-    // create clone world directory if it doesn't exist
     static {
         if(Files.notExists(CLONED_MAPS_PATH)){
             try {

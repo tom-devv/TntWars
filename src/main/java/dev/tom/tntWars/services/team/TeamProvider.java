@@ -22,7 +22,7 @@ public abstract class TeamProvider {
 
     public abstract int minimumPlayersRequired();
 
-    public abstract void populateTeams();
+    public abstract Collection<Team> populateTeams();
 
     public void initializeTeams(){
         for(int i = 0; i < this.teamCount; i++){

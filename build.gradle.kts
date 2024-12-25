@@ -49,6 +49,8 @@ tasks.shadowJar {
     archiveBaseName.set("ProjectLazer")
     archiveClassifier.set("")
     archiveVersion.set(version.toString())
+
+
 }
 
 

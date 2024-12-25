@@ -2,7 +2,7 @@ package dev.tom.tntWars.interfaces;
 
 import dev.tom.tntWars.models.game.Game;
 
-import dev.tom.tntWars.models.Map;
+import dev.tom.tntWars.models.map.Map;
 
 /**
  * The MapController is responsible for managing the maps available for games.
