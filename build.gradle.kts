@@ -76,11 +76,9 @@ fun configureBuildTask(taskName: String, path: String){
 
             println("Current destination directory: $originalDestination")
 
-            // Relocate the shadow JAR destination directory
             shadowJarTask.destinationDirectory.set(file(path))
             println("Relocated destination directory: ${shadowJarTask.destinationDirectory.get()}")
 
-            // Execute the shadowJar task
             shadowJarTask.actions.forEach { action ->
                 action.execute(shadowJarTask)
             }
