@@ -63,23 +63,27 @@ tasks.processResources {
     }
 }
 
+configureBuildTask("buildWindows", "/home/kynes/PaperServer/plugins")
+configureBuildTask("buildMac", "/Users/tompark/Code/Java/PaperServer/plugins")
 
-tasks.register("buildPlugin"){
-    group = "build"
-    description = "Builds the plugin and copies it to the server plugins folder"
-    doLast {
-        val shadowJarTask = tasks.named("shadowJar", com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class.java).get()
-        val originalDestination = shadowJarTask.destinationDirectory.get()
+fun configureBuildTask(taskName: String, path: String){
+    tasks.register(taskName) {
+        group = "build"
+        description = "Builds the plugin and copies it to the $taskName server plugins folder"
+        doLast {
+            val shadowJarTask = tasks.named("shadowJar", com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class.java).get()
+            val originalDestination = shadowJarTask.destinationDirectory.get()
 
-        println("Current destination directory: $originalDestination")
+            println("Current destination directory: $originalDestination")
 
-        // Relocate the shadow JAR destination directory
-        shadowJarTask.destinationDirectory.set(file("/home/kynes/PaperServer/plugins"))
-        println("Relocated destination directory: ${shadowJarTask.destinationDirectory.get()}")
+            // Relocate the shadow JAR destination directory
+            shadowJarTask.destinationDirectory.set(file(path))
+            println("Relocated destination directory: ${shadowJarTask.destinationDirectory.get()}")
 
-        // Execute the shadowJar task
-        shadowJarTask.actions.forEach { action ->
-            action.execute(shadowJarTask)
+            // Execute the shadowJar task
+            shadowJarTask.actions.forEach { action ->
+                action.execute(shadowJarTask)
+            }
         }
     }
 }
