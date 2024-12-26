@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 public class SpawnLocation {
 
     private final Location location;
+    private int teamNumber;
     private boolean occupied = false;
 
     public SpawnLocation(Location location){

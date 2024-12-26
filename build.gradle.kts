@@ -3,6 +3,8 @@ val minecraftVersion = project.properties["minecraftVersion"]!!.toString();
 plugins {
     id("java")
     id("com.gradleup.shadow") version "9.0.0-beta4"
+    id("xyz.jpenilla.run-paper") version "2.3.1"
+
 }
 
 repositories {
@@ -84,4 +86,8 @@ fun configureBuildTask(taskName: String, path: String){
             }
         }
     }
+}
+
+tasks.runServer{
+    minecraftVersion(minecraftVersion)
 }
