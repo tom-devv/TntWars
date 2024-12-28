@@ -1,5 +1,6 @@
 package dev.tom.tntWars.models.map;
 
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
 import java.util.ArrayList;
@@ -42,11 +43,26 @@ public class TeamSpawnLocations {
         return locations.size();
     }
 
+    public SpawnLocation getUnoccupied(){
+        SpawnLocation loc = getRandom();
+        if(loc == null) return null;
+        int count = 0;
+        while(loc.isOccupied()){
+            if(count > 1000) {
+                throw new RuntimeException("Failed to find unoccupied spawn location after 1000 attempts. Why?");
+            }
+            loc = getRandom();
+            count++;
+        }
+        return loc;
+    }
+
     /**
-     * Get a random spawn location from the list of spawn locations.
+     * Get a random unoccupied spawn location from the list of spawn locations.
      * @return
      */
-    public SpawnLocation getRandomSpawnLocation() {
+    private SpawnLocation getRandom() {
+        SpawnLocation loc = locations.get((int) (Math.random() * locations.size()));
         if (locations.isEmpty()) {
             return null;
         }

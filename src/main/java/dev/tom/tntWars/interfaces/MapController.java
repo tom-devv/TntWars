@@ -24,7 +24,7 @@ public interface MapController {
      * @param game The game that used the map.
      * @param map  The map to clean up.
      */
-    void releaseMap(Game game, Map map);
+    void releaseMap(Game game);
 
     /**
      * Deletes the actual Map world files

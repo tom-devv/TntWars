@@ -6,20 +6,18 @@ import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.models.game.Game;
 import dev.tom.tntWars.models.game.GameSettings;
 import dev.tom.tntWars.models.map.Map;
+import dev.tom.tntWars.models.map.TeamSpawnLocations;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class DefaultGameController extends Controller implements GameController {
 
     public DefaultGameController(TntWarsPlugin plugin) {
         super(plugin);
     }
-
 
     @Override
     public Optional<Game> findGame(GameSettings settings) {
@@ -34,36 +32,40 @@ public class DefaultGameController extends Controller implements GameController 
     @Override
     public void startGame(Game game) {
         Collection<Team> teams = game.getTeams();
-        TntWarsPlugin.getPlugin().getMapController().assignMap(game).thenRun(() -> {
-            for (UUID playerUUID : game.getSettings().getTeamProvider().getTeams().get(0).getPlayerUUIDs()) {
-                Player player = Bukkit.getPlayer(playerUUID);
-                System.out.println(playerUUID);
-                player.teleport(game.getMap().getWorld().getSpawnLocation());
-            }
-            for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-                onlinePlayer.teleport(new Location(game.getMap().getWorld(), 0, 100, 0));
-            }
-            System.out.println("Game started with " + teams.size() + " teams.");
-            System.out.println("Map: " + game.getMap().getName());
-            game.getMap().getTeamSpawnLocations().forEach((team) -> {
-                System.out.println("Team " + team.getTeamNumber());
-                team.getLocations().forEach((location) -> {
-                    System.out.println("Location: " + location.toString());
-                });
+        // Map assignment is done asynchronously
+        TntWarsPlugin.getPlugin().getMapController().assignMap(game).thenAcceptAsync(map -> {
+
+            Bukkit.getScheduler().runTask(TntWarsPlugin.getPlugin(), () -> {
+                moveTeamsToGame(game);
             });
+
+        }).exceptionally(throwable -> {
+            System.out.println("Error: " + throwable.getMessage());
+            return null;
         });
-
-
     }
 
-    private void sendTeamsToGame(Game game){
-
+    private void moveTeamsToGame(Game game){
+        List<Team> teams = new ArrayList<>(game.getTeams());
+        Map map = game.getMap();
+        World world = map.getWorld();
+        for (int i = 0; i < teams.size(); i++) {
+            Team team = teams.get(i);
+            TeamSpawnLocations spawns = map.getTeamSpawnLocations().get(i);
+            for (UUID playerUUID : team.getPlayerUUIDs()) {
+                Player player = Bukkit.getPlayer(playerUUID);
+                if (player != null) {
+                    spawns.getUnoccupied().spawnPlayer(player, world);
+                }
+            }
+        }
     }
+
 
 
     @Override
     public void endGame(Game game) {
-
+        TntWarsPlugin.getPlugin().getMapController().releaseMap(game);
     }
 
     @Override

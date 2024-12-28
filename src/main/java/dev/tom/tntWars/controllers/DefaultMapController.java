@@ -38,7 +38,11 @@ public class DefaultMapController extends Controller implements MapController {
 
 
     @Override
-    public void releaseMap(Game game, Map map) {
+    public void releaseMap(Game game) {
+        Map map = game.getMap();
+        if (map == null) {
+            throw new IllegalStateException("No map assigned to this game.");
+        }
         // The game is not finished, cannot release the map
         if (game.getState() != GameState.ENDED) {
             throw new IllegalStateException("Cannot release map while the game is not finished.");
