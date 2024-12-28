@@ -8,6 +8,7 @@ import org.bukkit.World;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 
@@ -22,10 +23,11 @@ public class RandomMapProvider implements MapProvider {
     }
 
     @Override
-    public Map getMap() {
+    public CompletableFuture<Map> getMap() {
         String mapName = pickRandomMapName();
-        World world = cloneMapWorld(mapName);
-        return null;
+
+        // Clone the world and create the Map asynchronously
+        return cloneMapWorld(mapName).thenApply(world -> new Map(mapName, world));
     }
 
     private String pickRandomMapName(){
@@ -45,8 +47,8 @@ public class RandomMapProvider implements MapProvider {
     }
 
 
-    private World cloneMapWorld(String mapName){
-        return worldManager.cloneMap(mapName).join();
+    private CompletableFuture<World> cloneMapWorld(String mapName){
+        return worldManager.cloneMap(mapName);
     }
 
     public List<String> getMapNames() {

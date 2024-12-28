@@ -1,14 +1,17 @@
 package dev.tom.tntWars.services.team;
 
 import dev.tom.tntWars.models.Team;
+import org.bukkit.entity.Player;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 public class BalancedTeamProvider extends TeamProvider {
 
-    public BalancedTeamProvider(Collection<UUID> players, int teamCount) {
-        super(players, teamCount);
+
+    public BalancedTeamProvider(int teamCount) {
+        super(teamCount);
     }
 
     @Override
@@ -17,7 +20,10 @@ public class BalancedTeamProvider extends TeamProvider {
     }
 
     @Override
-    public Collection<Team> populateTeams() {
-        return null; // TODO imp
+    public Collection<Team> populateTeams(Collection<UUID> players) {
+        return List.of();
     }
+
+
+
 }

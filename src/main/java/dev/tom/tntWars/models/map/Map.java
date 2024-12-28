@@ -1,7 +1,11 @@
 package dev.tom.tntWars.models.map;
 
 
+import dev.tom.tntWars.config.MapConfigLoader;
+import dev.tom.tntWars.config.MapSpawnsConfig;
 import org.bukkit.World;
+
+import java.util.List;
 
 /**
  * Maps are instanced per-game and have a world associated with them.
@@ -9,10 +13,40 @@ import org.bukkit.World;
  */
 public class Map {
 
+    /**
+     * The world associated with this map.
+     */
     private final World world;
+    /**
+     * The name of the map.
+     * Useful for getting information about this map.
+     */
+    private final String name;
+    private final List<TeamSpawnLocations> spawns;
 
-    public Map(World world){
+    public Map(String name, World world) {
         this.world = world;
+        this.name = name;
+        this.spawns = fetchSpawnLocations();
+        if(spawns == null) throw new RuntimeException("Failed to fetch spawn locations for map: " + name);
+    }
+
+    /**
+     * Fetch the spawn locations from the preloaded config files and return them.
+     * @return
+     */
+    private List<TeamSpawnLocations> fetchSpawnLocations(){
+        MapSpawnsConfig config = MapConfigLoader.getConfig(this.name);
+        if(config == null) throw new RuntimeException("Failed to fetch config for map: " + this.name);
+        return config.getTeamSpawnLocations();
+    }
+
+    public List<TeamSpawnLocations> getTeamSpawnLocations() {
+        return this.spawns;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public World getWorld() {

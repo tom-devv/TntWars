@@ -1,6 +1,7 @@
 package dev.tom.tntWars.services.team;
 
 import dev.tom.tntWars.models.Team;
+import org.bukkit.entity.Player;
 
 import java.util.*;
 
@@ -8,13 +9,10 @@ public abstract class TeamProvider {
 
     private final int teamCount;
     private final List<Team> teams = new ArrayList<>();
-    private final Collection<UUID> players;
 
-    public TeamProvider(Collection<UUID> players, int teamCount){
-        this.players = players;
+    public TeamProvider(int teamCount){
         this.teamCount = teamCount;
         initializeTeams();
-        populateTeams();
         if(teams.size() != teamCount) {
             throw new RuntimeException("Team count does not match the number of teams created.");
         }
@@ -22,7 +20,7 @@ public abstract class TeamProvider {
 
     public abstract int minimumPlayersRequired();
 
-    public abstract Collection<Team> populateTeams();
+    public abstract Collection<Team> populateTeams(Collection<UUID> players);
 
     public void initializeTeams(){
         for(int i = 0; i < this.teamCount; i++){
@@ -38,9 +36,6 @@ public abstract class TeamProvider {
         return teamCount;
     }
 
-    public Collection<UUID> getPlayers() {
-        return players;
-    }
 
     public List<Team> getTeams() {
         return teams;

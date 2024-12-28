@@ -4,6 +4,8 @@ import dev.tom.tntWars.models.game.Game;
 
 import dev.tom.tntWars.models.map.Map;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * The MapController is responsible for managing the maps available for games.
  * It handles the Map lifecycle
@@ -15,7 +17,7 @@ public interface MapController {
      * @param game
      * @return the map assigned to the game
      */
-    Map assignMap(Game game);
+    CompletableFuture<Map> assignMap(Game game);
 
     /**
      * Handles the cleanup of a map when a game ends

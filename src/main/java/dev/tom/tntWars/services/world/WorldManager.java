@@ -46,25 +46,14 @@ public class WorldManager {
 
     private static final List<String> IGNORED_FILES = Arrays.asList("uid.dat", "session.lock");
 
-    public CompletableFuture<World> cloneMap(World template) {
-        if (template == null) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("Map not found"));
-        }
-        String newName = template.getName()+ "_" + UUID.randomUUID();
-        return cloneWorld(template, newName);
-    }
-
     public CompletableFuture<World> cloneMap(String mapName) {
-        World world = Bukkit.getWorld(mapName);
-        if (world == null) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("Map not found"));
-        }
         String newName = mapName + "_" + UUID.randomUUID();
-        return cloneWorld(world, newName);
+        Path mapPath = MAP_TEMPLATES_PATH.resolve(mapName);
+        System.out.println("Map Path: " + mapPath);
+        return cloneWorld(mapPath, newName);
     }
 
-    private CompletableFuture<World> cloneWorld(World world, String newName){
-        Path source = world.getWorldFolder().toPath();
+    private CompletableFuture<World> cloneWorld(Path source, String newName){
         Path target = getClonedMapsPath().resolve(newName);
 
         // Async clone the directory
@@ -83,12 +72,12 @@ public class WorldManager {
                     return worldCreator.createWorld();
                 }).get(); // blocks main thread waiting for future to complete
             } catch (InterruptedException | ExecutionException e) {
-                TntWarsPlugin.getPlugin(TntWarsPlugin.class).getLogger().severe("Failed to clone world: " + e.getMessage());
+                TntWarsPlugin.getPlugin(TntWarsPlugin.class).getLogger().severe("Failed to clone world 1 : " + e.getMessage());
                 throw new RuntimeException(e);
             }
         })
         .exceptionally(e -> {
-            TntWarsPlugin.getPlugin(TntWarsPlugin.class).getLogger().severe("Failed to clone world: " + e.getMessage());
+            TntWarsPlugin.getPlugin(TntWarsPlugin.class).getLogger().severe("Failed to clone world 2: " + e.getMessage());
             throw new RuntimeException(e);
         })
         );

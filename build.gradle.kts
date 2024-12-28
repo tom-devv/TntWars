@@ -42,6 +42,8 @@ tasks.jar {
     }
 }
 
+val wslPath =  "/home/kynes/PaperServer/plugins"
+val macPath =  "/Users/tompark/Code/Java/PaperServer/plugins"
 
 tasks.shadowJar {
     manifest {
@@ -51,6 +53,7 @@ tasks.shadowJar {
     archiveBaseName.set("ProjectLazer")
     archiveClassifier.set("")
     archiveVersion.set(version.toString())
+    destinationDirectory.set(file(wslPath))
 
 
 }
@@ -62,29 +65,6 @@ tasks.processResources {
             "version" to project.version,
             "description" to project.description
         )
-    }
-}
-
-configureBuildTask("buildWindows", "/home/kynes/PaperServer/plugins")
-configureBuildTask("buildMac", "/Users/tompark/Code/Java/PaperServer/plugins")
-
-fun configureBuildTask(taskName: String, path: String){
-    tasks.register(taskName) {
-        group = "build"
-        description = "Builds the plugin and copies it to the $taskName server plugins folder"
-        doLast {
-            val shadowJarTask = tasks.named("shadowJar", com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class.java).get()
-            val originalDestination = shadowJarTask.destinationDirectory.get()
-
-            println("Current destination directory: $originalDestination")
-
-            shadowJarTask.destinationDirectory.set(file(path))
-            println("Relocated destination directory: ${shadowJarTask.destinationDirectory.get()}")
-
-            shadowJarTask.actions.forEach { action ->
-                action.execute(shadowJarTask)
-            }
-        }
     }
 }
 

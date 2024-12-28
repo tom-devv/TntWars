@@ -1,11 +1,12 @@
 package dev.tom.tntWars.models;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 public class Team {
 
-    private Set<UUID> playerUUIDs;
+    private Set<UUID> playerUUIDs = new HashSet<>();
 
     public Team(){
 

@@ -2,6 +2,7 @@ package dev.tom.tntWars.interfaces;
 
 import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.services.team.TeamProvider;
+import org.bukkit.entity.Player;
 
 import java.util.*;
 
@@ -13,6 +14,12 @@ public interface MatchmakingService {
      * @param playerId the unique identifier of the player
      */
     void addPlayerToQueue(UUID playerId);
+
+    /**
+     * Add a player to the matchmaking queue.
+     * @param player the player to add to the queue
+     */
+    void addPlayerToQueue(Player player);
 
     /**
      * Remove a player from the matchmaking queue.

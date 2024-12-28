@@ -9,6 +9,7 @@ import dev.tom.tntWars.models.game.GameState;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
 
 public class DefaultMapController extends Controller implements MapController {
 
@@ -19,17 +20,22 @@ public class DefaultMapController extends Controller implements MapController {
     }
 
     @Override
-    public Map assignMap(Game game) {
-        // A map is already assigned to this game, cannot assign a new one
-        if(activeGameMaps.containsKey(game)){
-            return activeGameMaps.get(game);
+    public CompletableFuture<Map> assignMap(Game game) {
+        // Check if a map is already assigned to this game
+        if (activeGameMaps.containsKey(game)) {
+            return CompletableFuture.completedFuture(activeGameMaps.get(game));
         }
+
         MapProvider provider = game.getSettings().getMapProvider();
-        Map map = provider.getMap();
-        activeGameMaps.put(game, map);
-        game.setMap(map);
-        return null;
+
+        // Retrieve the map asynchronously and handle assignment
+        return provider.getMap().thenApply(map -> {
+            activeGameMaps.put(game, map);
+            game.setMap(map);
+            return map;
+        });
     }
+
 
     @Override
     public void releaseMap(Game game, Map map) {

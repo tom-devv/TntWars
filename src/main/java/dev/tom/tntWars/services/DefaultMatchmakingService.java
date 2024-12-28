@@ -6,18 +6,18 @@ import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.models.game.Game;
 import dev.tom.tntWars.models.game.GameSettings;
 import dev.tom.tntWars.services.team.TeamProvider;
+import org.bukkit.entity.Player;
 
 import java.util.*;
 
 public class DefaultMatchmakingService implements MatchmakingService {
 
-    private final TeamProvider teamProvider;
+//    private final TeamProvider teamProvider;
     private final GameSettings gameSettings;
 
     private final Queue<UUID> queue = new LinkedList<>();
 
-    public DefaultMatchmakingService(TeamProvider teamProvider, GameSettings gameSettings) {
-        this.teamProvider = teamProvider;
+    public DefaultMatchmakingService(GameSettings gameSettings) {
         this.gameSettings = gameSettings;
     }
 
@@ -32,6 +32,11 @@ public class DefaultMatchmakingService implements MatchmakingService {
             return;
         }
         queue.add(playerId);
+    }
+
+    @Override
+    public void addPlayerToQueue(Player player) {
+        addPlayerToQueue(player.getUniqueId());
     }
 
     /**
@@ -52,9 +57,11 @@ public class DefaultMatchmakingService implements MatchmakingService {
      */
     @Override
     public void startGameWithTeams(TeamProvider teamProvider) {
-        if(queue.size() <= teamProvider.minimumPlayersRequired()) return;
+        if(queue.size() < teamProvider.minimumPlayersRequired()){
+            return;
+        }
+        Collection<Team> teams = teamProvider.populateTeams(getQueue());
         clearQueue();
-        Collection<Team> teams = teamProvider.populateTeams();
         Game game = TntWarsPlugin.getPlugin().getGameController().createGame(teams, gameSettings); // createGame requires game Settings
         TntWarsPlugin.getPlugin().getGameController().startGame(game);
     }
@@ -81,8 +88,5 @@ public class DefaultMatchmakingService implements MatchmakingService {
         return gameSettings;
     }
 
-    public TeamProvider getTeamProvider() {
-        return teamProvider;
-    }
 }
 
