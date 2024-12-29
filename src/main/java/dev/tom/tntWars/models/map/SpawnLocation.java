@@ -12,13 +12,6 @@ public class SpawnLocation {
     private int teamNumber;
     private transient boolean occupied = false;
 
-//    public SpawnLocation(int x, int y, int z, int teamNumber){
-//        this.x = x;
-//        this.y = y;
-//        this.z =z;
-//        this.teamNumber = teamNumber;
-//    }
-
     public void setZ(double z) {
         this.z = z;
     }

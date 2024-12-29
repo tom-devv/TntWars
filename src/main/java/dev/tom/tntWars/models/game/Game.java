@@ -52,6 +52,10 @@ public class Game {
         return teams;
     }
 
+    public String getGameId() {
+        return gameId;
+    }
+
     public GameState getState() {
         return state;
     }

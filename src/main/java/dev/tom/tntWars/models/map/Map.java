@@ -5,6 +5,7 @@ import dev.tom.tntWars.config.MapConfigLoader;
 import dev.tom.tntWars.config.MapSpawnsConfig;
 import org.bukkit.World;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,17 +29,16 @@ public class Map {
         this.world = world;
         this.name = name;
         this.spawns = fetchSpawnLocations();
-        if(spawns == null) throw new RuntimeException("Failed to fetch spawn locations for map: " + name);
     }
 
     /**
      * Fetch the spawn locations from the preloaded config files and return them.
-     * @return
+     * @return a CLONE of the spawn locations as the instance of them is unique to this map instance
      */
     private List<TeamSpawnLocations> fetchSpawnLocations(){
         MapSpawnsConfig config = MapConfigLoader.getConfig(this.name);
         if(config == null) throw new RuntimeException("Failed to fetch config for map: " + this.name);
-        return config.getTeamSpawnLocations();
+        return new ArrayList<>(config.getTeamSpawnLocations());
     }
 
     public List<TeamSpawnLocations> getTeamSpawnLocations() {

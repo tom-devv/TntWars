@@ -69,5 +69,4 @@ public class TeamSpawnLocations {
         return locations.get((int) (Math.random() * locations.size()));
     }
 
-
 }

@@ -36,7 +36,7 @@ public class DefaultMatchmakingService implements MatchmakingService {
             return;
         }
         queue.add(playerId);
-        MessageUtil.sendMini(playerId, "<green> You have joined the queue. Position: #" + getQueue().size());
+        MessageUtil.sendMini(playerId, "<green>You have joined the queue. Position: #" + getQueue().size());
         startGameWithTeams(TntWarsPlugin.getBalancedTeamProvider());
     }
 
@@ -53,7 +53,7 @@ public class DefaultMatchmakingService implements MatchmakingService {
     @Override
     public void removePlayerFromQueue(UUID playerId) {
         queue.remove(playerId);
-        MessageUtil.sendMini(playerId, "<green> You have left the queue.");
+        MessageUtil.sendMini(playerId, "<green>You have left the queue.");
     }
 
     /**
@@ -64,10 +64,7 @@ public class DefaultMatchmakingService implements MatchmakingService {
      */
     @Override
     public void startGameWithTeams(TeamProvider teamProvider) {
-        if(queue.size() < teamProvider.minimumPlayersRequired()) {
-            System.out.println("Returning!!!");
-            return;
-        }
+        if(queue.size() < teamProvider.minimumPlayersRequired()) return;
         Collection<Team> teams = teamProvider.populateTeams(getQueue());
         Game game = TntWarsPlugin.getGameController().createGame(teams, gameSettings);
         broadcastTimer(getQueue().stream().map(Bukkit::getPlayer).toList(), 5).thenRun(() -> {
@@ -76,7 +73,7 @@ public class DefaultMatchmakingService implements MatchmakingService {
             throwable.printStackTrace();
             return null;
         });
-        System.out.println("Running now!!!");
+        // clear queue after passing to broadcastTimer as it requires the players to broadcast to
         clearQueue();
     }
 
