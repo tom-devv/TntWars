@@ -10,7 +10,7 @@ import java.util.List;
  * A list of spawn locations for a team.
  */
 @ConfigSerializable
-public class TeamSpawnLocations {
+public class TeamSpawnLocations implements Cloneable {
 
     private List<SpawnLocation> locations = new ArrayList<>();
     private int teamNumber;
@@ -62,11 +62,28 @@ public class TeamSpawnLocations {
      * @return
      */
     private SpawnLocation getRandom() {
-        SpawnLocation loc = locations.get((int) (Math.random() * locations.size()));
         if (locations.isEmpty()) {
             return null;
         }
         return locations.get((int) (Math.random() * locations.size()));
     }
 
+    @Override
+    public TeamSpawnLocations clone() {
+        try {
+            // Perform a shallow copy
+            TeamSpawnLocations copy = (TeamSpawnLocations) super.clone();
+
+            // Deep copy the locations list
+            List<SpawnLocation> clonedLocations = new ArrayList<>();
+            for (SpawnLocation location : this.locations) {
+                clonedLocations.add(location.clone()); // Clone each SpawnLocation
+            }
+            copy.setLocations(clonedLocations);
+
+            return copy;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError("Cloning not supported", e); // This should not happen as we implement Cloneable
+        }
+    }
 }

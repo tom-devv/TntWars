@@ -24,11 +24,24 @@ public class Map {
      */
     private final String name;
     private final List<TeamSpawnLocations> spawns;
+    /**
+     * This is equivalent to the number of spawn locations available
+     */
+    private final int maxPlayers;
 
     public Map(String name, World world) {
         this.world = world;
         this.name = name;
         this.spawns = fetchSpawnLocations();
+        this.maxPlayers = fetchMaxPlayers();
+    }
+
+    private int fetchMaxPlayers(){
+        int total = 0;
+        for (TeamSpawnLocations spawn : this.spawns) {
+            total +=spawn.getLocations().size();
+        }
+        return total;
     }
 
     /**
@@ -38,11 +51,13 @@ public class Map {
     private List<TeamSpawnLocations> fetchSpawnLocations(){
         MapSpawnsConfig config = MapConfigLoader.getConfig(this.name);
         if(config == null) throw new RuntimeException("Failed to fetch config for map: " + this.name);
-        return new ArrayList<>(config.getTeamSpawnLocations());
+        return MapConfigLoader.cloneSpawnLocations(config.getTeamSpawnLocations());
     }
 
-    public List<TeamSpawnLocations> getTeamSpawnLocations() {
-        return this.spawns;
+    public List<TeamSpawnLocations> getTeamSpawnLocations() { return this.spawns; }
+
+    public int getMaxPlayers() {
+        return maxPlayers;
     }
 
     public String getName() {
@@ -52,4 +67,5 @@ public class Map {
     public World getWorld() {
         return world;
     }
+
 }

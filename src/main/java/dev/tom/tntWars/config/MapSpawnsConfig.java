@@ -16,6 +16,10 @@ public class MapSpawnsConfig {
         return mapName;
     }
 
+    /**
+     * Gets the team spawn locations
+     * @return a COPY of the spawn locations
+     */
     public List<TeamSpawnLocations> getTeamSpawnLocations() {
         return teamSpawnLocations;
     }

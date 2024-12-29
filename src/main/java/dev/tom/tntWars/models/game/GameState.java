@@ -38,32 +38,4 @@ public enum GameState {
                 return false;
         }
     }
-
-    public GameState getNextState() {
-        switch (this) {
-            case INACTIVE:
-                return ACTIVE;
-            case ACTIVE:
-                return PAUSED;
-            case PAUSED:
-                return ENDED;
-            case ENDED:
-                return ENDED;
-            default:
-                return UNKNOWN;
-        }
-    }
-
-    public GameState getPreviousState() {
-        switch (this) {
-            case INACTIVE, ACTIVE:
-                return INACTIVE;
-            case PAUSED:
-                return ACTIVE;
-            case ENDED:
-                return PAUSED;
-            default:
-                return UNKNOWN;
-        }
-    }
 }

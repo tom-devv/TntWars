@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
 @ConfigSerializable
-public class SpawnLocation {
+public class SpawnLocation implements Cloneable{
 
     private double x,y,z;
     private int teamNumber;
@@ -57,4 +57,16 @@ public class SpawnLocation {
         return x;
     }
 
+    @Override
+    public SpawnLocation clone() {
+        try {
+            SpawnLocation copy = (SpawnLocation) super.clone();
+            // Example of deep-copying a mutable object
+            // copy.someList = new ArrayList<>(this.someList);
+            copy.occupied = false; // Reset transient field
+            return copy;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError("Cloning not supported", e);
+        }
+    }
 }

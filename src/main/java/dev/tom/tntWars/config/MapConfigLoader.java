@@ -1,6 +1,7 @@
 package dev.tom.tntWars.config;
 
 import dev.tom.tntWars.TntWarsPlugin;
+import dev.tom.tntWars.models.map.TeamSpawnLocations;
 import it.unimi.dsi.fastutil.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.ConfigurateException;
@@ -11,7 +12,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * A utility class for loading and saving map configurations from YAML files.
@@ -143,5 +146,13 @@ public class MapConfigLoader {
      */
     public static @Nullable MapSpawnsConfig getConfig(String mapName) {
         return mapConfigs.get(mapName);
+    }
+
+    public static List<TeamSpawnLocations> cloneSpawnLocations(List<TeamSpawnLocations> originalList) {
+        List<TeamSpawnLocations> clonedList = new ArrayList<>();
+        for (TeamSpawnLocations teamSpawnLocation : originalList) {
+            clonedList.add(teamSpawnLocation.clone());
+        }
+        return clonedList;
     }
 }

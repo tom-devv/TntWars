@@ -5,40 +5,44 @@ import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.utils.NameGenerator;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 public class Game {
 
     private final String gameId;
     private final GameSettings settings;
     private final Collection<Team> teams;
+    private Set<UUID> participants = new HashSet<>();
     private Map map;
     private GameState state;
 
     public Game(GameSettings settings, Collection<Team> teams){
         this.settings = settings;
         this.teams = teams;
+        this.state = GameState.INACTIVE;
         this.gameId = NameGenerator.generateName();
+        this.participants = resolveParticipants();
     }
 
+    public Set<UUID> getParticipants(){
+        return this.participants;
+    }
+
+    /**
+     * Pulls UUID out of the teams to get a complete set of all players in the game
+     */
+    private Set<UUID> resolveParticipants() {
+        Set<UUID> participants = new HashSet<>();
+        this.teams.forEach(team -> {
+            participants.addAll(team.getPlayerUUIDs());
+        });
+        return participants;
+    }
 
     public Map getMap() {
         return map;
-    }
-
-    public void previousState(){
-        GameState newState = state.getPreviousState();
-        if (!state.isTransitionAllowed(newState)) {
-            throw new IllegalStateException("Transition from " + state + " to " + newState + " is not allowed.");
-        }
-        state = newState;
-    }
-
-    public void nextState() {
-        GameState newState = state.getNextState();
-        if (!state.isTransitionAllowed(newState)) {
-            throw new IllegalStateException("Transition from " + state + " to " + newState + " is not allowed.");
-        }
-        state = newState;
     }
 
     public void setMap(Map map) {
@@ -46,6 +50,14 @@ public class Game {
             throw new IllegalStateException("Map is already set for this game.");
         }
         this.map = map;
+    }
+
+    public void setState(GameState state) {
+        if(getState().isTransitionAllowed(state)){
+            this.state = state;
+        } else {
+            throw new IllegalStateException("Cannot transition game: " + gameId + " from state: " + getState() + " to state: " + state);
+        }
     }
 
     public Collection<Team> getTeams() {

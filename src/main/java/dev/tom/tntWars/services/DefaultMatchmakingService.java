@@ -65,16 +65,19 @@ public class DefaultMatchmakingService implements MatchmakingService {
     @Override
     public void startGameWithTeams(TeamProvider teamProvider) {
         if(queue.size() < teamProvider.minimumPlayersRequired()) return;
-        Collection<Team> teams = teamProvider.populateTeams(getQueue());
+        Queue<UUID> queueClone = new LinkedList<>(getQueue());
+        clearQueue();
+
+        // The matchmaking service has NO IDEA what map is going to be assigned, and it doesn't need to
+
+        Collection<Team> teams = teamProvider.populateTeams(queueClone);
         Game game = TntWarsPlugin.getGameController().createGame(teams, gameSettings);
-        broadcastTimer(getQueue().stream().map(Bukkit::getPlayer).toList(), 5).thenRun(() -> {
+        broadcastTimer(queueClone.stream().map(Bukkit::getPlayer).toList(), 5).thenRun(() -> {
             TntWarsPlugin.getGameController().startGame(game);
         }).exceptionally(throwable ->  {
             throwable.printStackTrace();
             return null;
         });
-        // clear queue after passing to broadcastTimer as it requires the players to broadcast to
-        clearQueue();
     }
 
     /**
