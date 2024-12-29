@@ -6,9 +6,13 @@ import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.models.game.Game;
 import dev.tom.tntWars.models.game.GameSettings;
 import dev.tom.tntWars.services.team.TeamProvider;
+import dev.tom.tntWars.utils.MessageUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class DefaultMatchmakingService implements MatchmakingService {
 
@@ -32,6 +36,8 @@ public class DefaultMatchmakingService implements MatchmakingService {
             return;
         }
         queue.add(playerId);
+        MessageUtil.sendMini(playerId, "<green> You have joined the queue. Position: #" + getQueue().size());
+        startGameWithTeams(TntWarsPlugin.getBalancedTeamProvider());
     }
 
     @Override
@@ -47,24 +53,68 @@ public class DefaultMatchmakingService implements MatchmakingService {
     @Override
     public void removePlayerFromQueue(UUID playerId) {
         queue.remove(playerId);
+        MessageUtil.sendMini(playerId, "<green> You have left the queue.");
     }
 
     /**
      * Process the matchmaking queue and form teams.
      *
-     * @param teamProvider
+     * @param teamProvider this should be changed in the future but right now it's static inside the Plugin class
      * @return a list of player IDs grouped into teams
      */
     @Override
     public void startGameWithTeams(TeamProvider teamProvider) {
-        if(queue.size() < teamProvider.minimumPlayersRequired()){
+        if(queue.size() < teamProvider.minimumPlayersRequired()) {
+            System.out.println("Returning!!!");
             return;
         }
         Collection<Team> teams = teamProvider.populateTeams(getQueue());
+        broadcastTimer(getQueue().stream().map(Bukkit::getPlayer).toList(), 5).thenRun(() -> {
+            Game game = TntWarsPlugin.getGameController().createGame(teams, gameSettings); // createGame requires game Settings
+            TntWarsPlugin.getGameController().startGame(game);
+        }).exceptionally(throwable ->  {
+            throwable.printStackTrace();
+            return null;
+        });
+        System.out.println("Running now!!!");
         clearQueue();
-        Game game = TntWarsPlugin.getPlugin().getGameController().createGame(teams, gameSettings); // createGame requires game Settings
-        TntWarsPlugin.getPlugin().getGameController().startGame(game);
     }
+
+    /**
+     * Broadcasts a timer to a collection of players
+     * @param players to broadcast to, this is normally the queue
+     * @param seconds
+     * @return a future
+     */
+    private CompletableFuture<Void> broadcastTimer(Collection<Player> players, int seconds) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+
+        // Create a Bukkit task that will handle the countdown
+        new BukkitRunnable() {
+            int remainingTime = seconds;
+
+            @Override
+            public void run() {
+                if (remainingTime <= 0) {
+                    // Timer has finished, complete the future and cancel the task
+                    future.complete(null); // Completing the future when the timer finishes
+                    this.cancel();
+                } else {
+                    // Optionally, log or display the remaining time
+                    for (Player player : players) {
+                        MessageUtil.sendTitle(player, "<red> Game starting </red>", "<gray> In " + remainingTime + " seconds </gray>");
+                    }
+                    remainingTime--; // Decrease the time
+                }
+            }
+        }.runTaskTimer(TntWarsPlugin.getPlugin(), 0 ,20);
+        return future;
+    }
+
+
+
+
+
 
     /**
      * Clear the matchmaking queue.

@@ -26,7 +26,7 @@ public class RandomTeamProvider extends TeamProvider {
 
     @Override
     public int minimumPlayersRequired() {
-        return 1;
+        return 2;
     }
 
 
