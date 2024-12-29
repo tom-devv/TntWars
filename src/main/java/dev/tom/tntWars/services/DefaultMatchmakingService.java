@@ -69,8 +69,8 @@ public class DefaultMatchmakingService implements MatchmakingService {
             return;
         }
         Collection<Team> teams = teamProvider.populateTeams(getQueue());
+        Game game = TntWarsPlugin.getGameController().createGame(teams, gameSettings);
         broadcastTimer(getQueue().stream().map(Bukkit::getPlayer).toList(), 5).thenRun(() -> {
-            Game game = TntWarsPlugin.getGameController().createGame(teams, gameSettings); // createGame requires game Settings
             TntWarsPlugin.getGameController().startGame(game);
         }).exceptionally(throwable ->  {
             throwable.printStackTrace();
