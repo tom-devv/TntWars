@@ -13,6 +13,7 @@ repositories {
         name = "papermc"
         url = uri("https://repo.papermc.io/repository/maven-public/")
     }
+    maven(url = "https://repo.codemc.org/repository/maven-public/")
 }
 
 dependencies {
@@ -22,6 +23,17 @@ dependencies {
         exclude(module = "snakeyaml")
     }
     implementation("org.yaml:snakeyaml:1.26")
+
+    // commandapi
+    implementation("dev.jorel:commandapi-bukkit-shade-mojang-mapped:9.7.0")
+//    compileOnly("dev.jorel:commandapi-annotations:9.7.0")
+//    annotationProcessor("dev.jorel:commandapi-annotations:9.7.0")
+
+    // adventure (minimessage)
+    implementation("net.kyori:adventure-api:4.18.0")
+    implementation("net.kyori:adventure-text-minimessage:4.18.0")
+
+
 
     compileOnly("io.papermc.paper:paper-api:${minecraftVersion}-R0.1-SNAPSHOT")
 }
@@ -53,6 +65,11 @@ tasks.shadowJar {
     archiveBaseName.set("ProjectLazer")
     archiveClassifier.set("")
     archiveVersion.set(version.toString())
+
+
+    relocate("dev.jorel.commandapi", "dev.tom.commandapi")
+
+
     destinationDirectory.set(file(wslPath))
 
 

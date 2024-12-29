@@ -2,20 +2,18 @@ package dev.tom.tntWars;
 
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import com.github.javafaker.Faker;
+import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.tom.tntWars.config.MapConfigLoader;
-import dev.tom.tntWars.config.MapSpawnsConfig;
 import dev.tom.tntWars.controllers.DefaultGameController;
 import dev.tom.tntWars.controllers.DefaultMapController;
 import dev.tom.tntWars.interfaces.MapController;
 import dev.tom.tntWars.interfaces.GameController;
 import dev.tom.tntWars.interfaces.MapProvider;
-import dev.tom.tntWars.models.Team;
-import dev.tom.tntWars.models.game.Game;
 import dev.tom.tntWars.models.game.GameSettings;
-import dev.tom.tntWars.models.map.Map;
 import dev.tom.tntWars.services.DefaultMatchmakingService;
 import dev.tom.tntWars.services.map.RandomMapProvider;
-import dev.tom.tntWars.services.team.RandomTeamProvider;
+import dev.tom.tntWars.services.team.BalancedTeamProvider;
 import dev.tom.tntWars.services.team.TeamProvider;
 import dev.tom.tntWars.services.world.WorldManager;
 import org.bukkit.Bukkit;
@@ -30,13 +28,13 @@ import org.spongepowered.configurate.ConfigurateException;
 
 public final class TntWarsPlugin extends JavaPlugin implements Listener {
 
-    private GameController gameController;
-    private MapController mapController;
+    private static GameController gameController;
+    private static MapController mapController;
 
-    private DefaultMatchmakingService matchmakingService;
+    private static DefaultMatchmakingService matchmakingService;
 
     private static MapProvider randomMapProvider;
-    private static TeamProvider randomTeamProvider;
+    private static TeamProvider balancedTeamProvider;
 
     private static final Faker faker = new Faker();
 
@@ -45,8 +43,14 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
     private static Location lobbyLocation; //TODO: please remove this and make it a config!
 
     @Override
+    public void onLoad() {
+        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(true)); // Load with verbose output
+    }
+
+    @Override
     public void onEnable() {
         plugin = this;
+        CommandAPI.onEnable();
         loadMapConfigs();
         initializeDefaults();
         deleteThisMethod();
@@ -61,8 +65,7 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     public void sneak(PlayerToggleSneakEvent e){
-        matchmakingService.startGameWithTeams(randomTeamProvider);
-        getLogger().info("Game started with teams.");
+        matchmakingService.startGameWithTeams(balancedTeamProvider);
     }
 
 
@@ -91,7 +94,7 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
 
 
         randomMapProvider = new RandomMapProvider(worldManager);
-        randomTeamProvider = new RandomTeamProvider(1);
+        balancedTeamProvider = new BalancedTeamProvider(2);
 
         matchmakingService = new DefaultMatchmakingService(GameSettings.defaultSettings());
 
@@ -100,7 +103,7 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-
+        CommandAPI.onDisable();
     }
 
 
@@ -108,16 +111,12 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
         return randomMapProvider;
     }
 
-    public MapController getMapController() {
-        return mapController;
-    }
-
-    public DefaultMatchmakingService getMatchmakingService() {
+    public static DefaultMatchmakingService getMatchmakingService() {
         return matchmakingService;
     }
 
-    public static TeamProvider getRandomTeamProvider() {
-        return randomTeamProvider;
+    public static TeamProvider getBalancedTeamProvider() {
+        return balancedTeamProvider;
     }
 
     public static Location getLobbyLocation() {
@@ -132,8 +131,11 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
         return plugin;
     }
 
-    public GameController getGameController() {
+    public static GameController getGameController() {
         return gameController;
     }
 
+    public static MapController getMapController() {
+        return mapController;
+    }
 }
