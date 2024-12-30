@@ -4,7 +4,6 @@ plugins {
     id("java")
     id("com.gradleup.shadow") version "9.0.0-beta4"
     id("xyz.jpenilla.run-paper") version "2.3.1"
-
 }
 
 repositories {
@@ -16,6 +15,8 @@ repositories {
     maven(url = "https://repo.codemc.org/repository/maven-public/")
 }
 
+
+
 dependencies {
     implementation("org.spongepowered:configurate-yaml:4.1.2")
 
@@ -26,14 +27,10 @@ dependencies {
 
     // commandapi
     implementation("dev.jorel:commandapi-bukkit-shade-mojang-mapped:9.7.0")
-//    compileOnly("dev.jorel:commandapi-annotations:9.7.0")
-//    annotationProcessor("dev.jorel:commandapi-annotations:9.7.0")
 
     // adventure (minimessage)
     implementation("net.kyori:adventure-api:4.18.0")
     implementation("net.kyori:adventure-text-minimessage:4.18.0")
-
-
 
     compileOnly("io.papermc.paper:paper-api:${minecraftVersion}-R0.1-SNAPSHOT")
 }

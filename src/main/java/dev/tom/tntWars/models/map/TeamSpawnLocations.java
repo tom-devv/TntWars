@@ -15,6 +15,13 @@ public class TeamSpawnLocations implements Cloneable {
     private List<SpawnLocation> locations = new ArrayList<>();
     private int teamNumber;
 
+    public TeamSpawnLocations(int teamNumber, List<SpawnLocation> locations) {
+        this.locations = locations;
+        this.teamNumber = teamNumber;
+    }
+
+    public TeamSpawnLocations() {}
+
     public void setTeamNumber(int teamNumber) {
         this.teamNumber = teamNumber;
     }

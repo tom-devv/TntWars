@@ -2,10 +2,9 @@ package dev.tom.tntWars.models.map;
 
 
 import dev.tom.tntWars.config.MapConfigLoader;
-import dev.tom.tntWars.config.MapSpawnsConfig;
+import dev.tom.tntWars.config.MapConfig;
 import org.bukkit.World;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,12 +27,18 @@ public class Map {
      * This is equivalent to the number of spawn locations available
      */
     private final int maxPlayers;
+    /**
+     * The config associated with the map
+     */
+    private final MapConfig mapConfig;
 
     public Map(String name, World world) {
         this.world = world;
         this.name = name;
         this.spawns = fetchSpawnLocations();
         this.maxPlayers = fetchMaxPlayers();
+        this.mapConfig = MapConfigLoader.getConfig(name);
+        if(this.mapConfig == null) throw new RuntimeException("Failed to fetch config for map: " + name + " is map_name correct?");
     }
 
     private int fetchMaxPlayers(){
@@ -49,7 +54,7 @@ public class Map {
      * @return a CLONE of the spawn locations as the instance of them is unique to this map instance
      */
     private List<TeamSpawnLocations> fetchSpawnLocations(){
-        MapSpawnsConfig config = MapConfigLoader.getConfig(this.name);
+        MapConfig config = MapConfigLoader.getConfig(this.name);
         if(config == null) throw new RuntimeException("Failed to fetch config for map: " + this.name);
         return MapConfigLoader.cloneSpawnLocations(config.getTeamSpawnLocations());
     }
@@ -58,6 +63,10 @@ public class Map {
 
     public int getMaxPlayers() {
         return maxPlayers;
+    }
+
+    public MapConfig getConfig() {
+        return mapConfig;
     }
 
     public String getName() {

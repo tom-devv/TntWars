@@ -20,7 +20,7 @@ import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.stream.Stream;
 
-public class DefaultGameController extends Controller<Game> implements GameController {
+public class DefaultGameController extends Controller<UUID, Game> implements GameController {
 
     public DefaultGameController(TntWarsPlugin plugin) {
         super(plugin);
@@ -44,13 +44,24 @@ public class DefaultGameController extends Controller<Game> implements GameContr
 
         TntWarsPlugin.getMapController().assignMap(game).thenAcceptAsync(map -> {
 
-            game.setState(GameState.ACTIVE);
-            enoughSpawns(game);
+            if(!enoughSpawns(game)) {
+                throw new RuntimeException("Not enough spawns to start game: " + game.getGameId());
+            } else {
+                game.setState(GameState.ACTIVE);
 
-            Bukkit.getScheduler().runTask(TntWarsPlugin.getPlugin(), () -> {
-                moveTeamsToGame(game);
+                // ensure that each participant is added to the instance map
+                // TODO add robust logging for if a player is already contained in the map
+                game.getParticipants().forEach(uuid -> {
+                    instances.put(uuid, game);
+                });
 
-            });
+                // complete this sync
+                Bukkit.getScheduler().runTask(TntWarsPlugin.getPlugin(), () -> {
+                    moveTeamsToGame(game);
+
+                });
+            }
+
 
         }).exceptionally(throwable -> {
             TntWarsPlugin.getPlugin().getLogger().severe("Error starting game (" + game.getGameId() + ") :" + throwable.getMessage());
@@ -65,6 +76,7 @@ public class DefaultGameController extends Controller<Game> implements GameContr
         if(endEvent.isCancelled()) return;
 
         game.setState(GameState.ENDED);
+        game.getParticipants().forEach(instances::remove); // remove uuid's from instance map
         movePlayersToLobby(game);
         TntWarsPlugin.getMapController().releaseMap(game);
     }
@@ -98,27 +110,19 @@ public class DefaultGameController extends Controller<Game> implements GameContr
 
     @Override
     public Optional<Game> getGameByPlayer(Player player) {
-        for (Game instance : getInstances()) {
-            if(instance.getParticipants().contains(player.getUniqueId())){
-                return Optional.of(instance);
-            }
-        }
-        return Optional.empty();
+
+        UUID uuid = player.getUniqueId();
+        Game game = getInstances().get(uuid);
+        if(game == null) return Optional.empty();
+        return Optional.of(game);
     }
 
     @Override
     public boolean isInGame(Player... players) {
         for (Player player : players) {
-            boolean found = false;
-            for (Game inst : getInstances()) {
-                if (inst.getParticipants().contains(player.getUniqueId())) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                return false;
-            }
+            UUID uuid = player.getUniqueId();
+            boolean found = instances.containsKey(uuid);
+            if(!found) return false;
         }
         return true;
     }

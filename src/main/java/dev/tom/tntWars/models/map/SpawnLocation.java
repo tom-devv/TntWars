@@ -9,8 +9,15 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 public class SpawnLocation implements Cloneable{
 
     private double x,y,z;
-    private int teamNumber;
     private transient boolean occupied = false;
+
+    public SpawnLocation(int x, int y, int z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    public SpawnLocation() {}
 
     public void setZ(double z) {
         this.z = z;
@@ -24,9 +31,6 @@ public class SpawnLocation implements Cloneable{
         this.x = x;
     }
 
-    public void setTeamNumber(int teamNumber) {
-        this.teamNumber = teamNumber;
-    }
 
     public void spawnPlayer(Player player, World world){
         player.teleport(new Location(world, x, y, z));
@@ -41,9 +45,6 @@ public class SpawnLocation implements Cloneable{
         return occupied;
     }
 
-    public int getTeamNumber() {
-        return teamNumber;
-    }
 
     public double getZ() {
         return z;

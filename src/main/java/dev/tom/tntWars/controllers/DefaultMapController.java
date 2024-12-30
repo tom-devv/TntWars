@@ -14,9 +14,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 
-public class DefaultMapController extends Controller implements MapController {
-
-    private final java.util.Map<Game, Map> activeGameMaps = new HashMap<>();
+public class DefaultMapController extends Controller<Game, Map> implements MapController {
 
     public DefaultMapController(TntWarsPlugin plugin) {
         super(plugin);
@@ -25,15 +23,15 @@ public class DefaultMapController extends Controller implements MapController {
     @Override
     public CompletableFuture<Map> assignMap(Game game) {
         // Check if a map is already assigned to this game
-        if (activeGameMaps.containsKey(game)) {
-            return CompletableFuture.completedFuture(activeGameMaps.get(game));
+        if (instances.containsKey(game)) {
+            return CompletableFuture.completedFuture(instances.get(game));
         }
 
         MapProvider provider = game.getSettings().getMapProvider();
 
         // Retrieve the map asynchronously and handle assignment
         return provider.getMap().thenApply(map -> {
-            activeGameMaps.put(game, map);
+            instances.put(game, map);
             game.setMap(map);
             return map;
         });
@@ -54,7 +52,7 @@ public class DefaultMapController extends Controller implements MapController {
         for (Player player : map.getWorld().getPlayers()) {
              player.teleport(TntWarsPlugin.getLobbyLocation());
         }
-        activeGameMaps.remove(game);
+        instances.remove(game);
         game.setMap(null);
         deleteMap(map);
     }
