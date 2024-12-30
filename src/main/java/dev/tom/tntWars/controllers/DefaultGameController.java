@@ -18,8 +18,9 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.stream.Stream;
 
-public class DefaultGameController extends Controller implements GameController {
+public class DefaultGameController extends Controller<Game> implements GameController {
 
     public DefaultGameController(TntWarsPlugin plugin) {
         super(plugin);
@@ -42,11 +43,15 @@ public class DefaultGameController extends Controller implements GameController 
         if(startEvent.isCancelled()) return;
 
         TntWarsPlugin.getMapController().assignMap(game).thenAcceptAsync(map -> {
+
+            game.setState(GameState.ACTIVE);
+            enoughSpawns(game);
+
             Bukkit.getScheduler().runTask(TntWarsPlugin.getPlugin(), () -> {
-                enoughSpawns(game);
                 moveTeamsToGame(game);
-                game.setState(GameState.ACTIVE);
+
             });
+
         }).exceptionally(throwable -> {
             TntWarsPlugin.getPlugin().getLogger().severe("Error starting game (" + game.getGameId() + ") :" + throwable.getMessage());
             return null;
@@ -60,6 +65,7 @@ public class DefaultGameController extends Controller implements GameController 
         if(endEvent.isCancelled()) return;
 
         game.setState(GameState.ENDED);
+        movePlayersToLobby(game);
         TntWarsPlugin.getMapController().releaseMap(game);
     }
 
@@ -76,6 +82,45 @@ public class DefaultGameController extends Controller implements GameController 
     @Override
     public Game getGameById(String gameId) {
         return null;
+    }
+
+
+    @Override
+    public Optional<Game> getSharedGame(Player player1, Player player2) {
+        Optional<Game> game1 = getGameByPlayer(player1);
+        Optional<Game> game2 = getGameByPlayer(player2);
+
+        if (game1.isPresent() && game2.isPresent() && game1.get() == game2.get()) {
+            return game1; // or game2, they refer to the same object
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Game> getGameByPlayer(Player player) {
+        for (Game instance : getInstances()) {
+            if(instance.getParticipants().contains(player.getUniqueId())){
+                return Optional.of(instance);
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean isInGame(Player... players) {
+        for (Player player : players) {
+            boolean found = false;
+            for (Game inst : getInstances()) {
+                if (inst.getParticipants().contains(player.getUniqueId())) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void movePlayersToLobby(Game game){

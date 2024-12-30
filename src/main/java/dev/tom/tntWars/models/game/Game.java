@@ -3,6 +3,7 @@ package dev.tom.tntWars.models.game;
 import dev.tom.tntWars.models.map.Map;
 import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.utils.NameGenerator;
+import org.bukkit.entity.Player;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -58,6 +59,21 @@ public class Game {
         } else {
             throw new IllegalStateException("Cannot transition game: " + gameId + " from state: " + getState() + " to state: " + state);
         }
+    }
+
+    /**
+     * Checks if two players are on the same team
+     * @param player1
+     * @param player2
+     * @return
+     */
+    public boolean sameTeam(Player player1, Player player2){
+        for (Team team : getTeams()) {
+            if(team.sameTeam(player1, player2)){
+                return true;
+            }
+        }
+        return false;
     }
 
     public Collection<Team> getTeams() {
