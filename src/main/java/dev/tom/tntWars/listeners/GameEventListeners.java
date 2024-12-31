@@ -52,7 +52,8 @@ public class GameEventListeners implements Listener {
             // attempting to move outside of map extent or cross centre divide
             Location to = e.getTo();
             if (!MapUtils.withinExtent(game.getMap(), to) || MapUtils.withinCentreDivide(game.getMap(), to)) {
-                Vector reboundVelocity = player.getVelocity().multiply(-2);
+                double reboundConstant = 0.5;
+                Vector reboundVelocity = player.getVelocity().normalize().multiply(reboundConstant);
                 player.setVelocity(reboundVelocity);
                 e.setCancelled(true);
                 MessageUtil.sendTitle(player.getUniqueId(), "<red><bold>Out of bounds!</bold></red>", "<gray>This part of the map is out of bounds</gray>");
