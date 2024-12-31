@@ -7,6 +7,7 @@ import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.models.game.Game;
 import dev.tom.tntWars.models.game.GameState;
 import dev.tom.tntWars.models.game.GameStats;
+import dev.tom.tntWars.utils.GameUtil;
 import dev.tom.tntWars.utils.MapUtils;
 import dev.tom.tntWars.utils.MessageUtil;
 import org.bukkit.Location;
@@ -28,24 +29,22 @@ public class GameEventListeners implements Listener {
     @EventHandler
     public void playerExitBounds(PlayerMoveEvent e){
         Player player = e.getPlayer();
-        Optional<Game> optionalGame = TntWarsPlugin.getGameController().getGameByPlayer(player);
-        if(optionalGame.isEmpty()) return;
-        Game game = optionalGame.get();
-
-        // game paused -> freeze movement
-        if(game.getState().equals(GameState.PAUSED)) {
-            e.setCancelled(true);
-            MessageUtil.sendTitle(player.getUniqueId(), "<red><bold>PAUSED!</bold></red>", "<gray>This game is currently paused</gray>");
-        }
-        // attempting to move outside of map extent or cross centre divide
-        Location to = e.getTo();
-        if(!MapUtils.withinExtent(game.getMap(), to) || MapUtils.withinCentreDivide(game.getMap(), to) ){
-            Vector reboundVelocity = player.getVelocity().multiply(-2);
-            player.setVelocity(reboundVelocity);
-            e.setCancelled(true);
-            MessageUtil.sendTitle(player.getUniqueId(), "<red><bold>Out of bounds!</bold></red>", "<gray>This part of the map is out of bounds</gray>");
-            return;
-        }
+        GameUtil.getPlayerGame(player).ifPresent(game-> {
+            // game paused -> freeze movement
+            if (game.getState().equals(GameState.PAUSED)) {
+                e.setCancelled(true);
+                MessageUtil.sendTitle(player.getUniqueId(), "<red><bold>PAUSED!</bold></red>", "<gray>This game is currently paused</gray>");
+            }
+            // attempting to move outside of map extent or cross centre divide
+            Location to = e.getTo();
+            if (!MapUtils.withinExtent(game.getMap(), to) || MapUtils.withinCentreDivide(game.getMap(), to)) {
+                Vector reboundVelocity = player.getVelocity().multiply(-2);
+                player.setVelocity(reboundVelocity);
+                e.setCancelled(true);
+                MessageUtil.sendTitle(player.getUniqueId(), "<red><bold>Out of bounds!</bold></red>", "<gray>This part of the map is out of bounds</gray>");
+                return;
+            }
+        });
     }
 
     @EventHandler
@@ -75,20 +74,19 @@ public class GameEventListeners implements Listener {
         Player player = e.getPlayer();
         DamageSource source = e.getDamageSource();
         if(!(source.getDirectEntity() instanceof TNTPrimed tnt)) return;
-        // cannot use source.getCausingEntity().getName()
-        Optional<Game> optionalGame = TntWarsPlugin.getGameController().getGameByPlayer(player);
-        if(optionalGame.isEmpty()) return;
-        Game game = optionalGame.get();
-        int teamNumber = MapUtils.getTeamRegion(game.getMap(), tnt.getOrigin());
-        if(teamNumber == -1) throw new RuntimeException("Player: " + player.getName() + " died to an explosion fired from outside any team region: " + tnt.getOrigin());
-        Team teamResponsible = game.getTeam(teamNumber);
-        GameStats stats = game.getStats();
-        int teamKills = stats.addTeamKill(teamResponsible);
-        // team out of lives
-        if(teamKills > game.getSettings().getLivesPerTeam()) {
-            game.getStats().setWinningTeam(teamResponsible);
-            TntWarsPlugin.getGameController().endGame(game);
-        }
+        GameUtil.getPlayerGame(player).ifPresent(game->{
+            int teamNumber = MapUtils.getTeamRegion(game.getMap(), tnt.getOrigin());
+            if(teamNumber == -1) throw new RuntimeException("Player: " + player.getName() + " died to an explosion fired from outside any team region: " + tnt.getOrigin());
+            Team teamResponsible = game.getTeam(teamNumber);
+            GameStats stats = game.getStats();
+            int teamKills = stats.addTeamKill(teamResponsible);
+            // team out of lives
+            if(teamKills > game.getSettings().getLivesPerTeam()) {
+                game.getStats().setWinningTeam(teamResponsible);
+                TntWarsPlugin.getGameController().endGame(game);
+            }
+        });
+
     }
 
 
@@ -99,6 +97,6 @@ public class GameEventListeners implements Listener {
 
     @EventHandler
     public void gameEnd(GameEndEvent event){
-
+        System.out.println("Game: " + event.getGame() + " has ended");
     }
 }
