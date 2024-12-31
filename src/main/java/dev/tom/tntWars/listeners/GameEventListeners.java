@@ -3,12 +3,17 @@ package dev.tom.tntWars.listeners;
 import dev.tom.tntWars.TntWarsPlugin;
 import dev.tom.tntWars.events.game.GameEndEvent;
 import dev.tom.tntWars.events.game.GameStartEvent;
+import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.models.game.Game;
 import dev.tom.tntWars.models.game.GameState;
+import dev.tom.tntWars.models.game.GameStats;
 import dev.tom.tntWars.utils.MapUtils;
 import dev.tom.tntWars.utils.MessageUtil;
 import org.bukkit.Location;
+import org.bukkit.damage.DamageSource;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -58,9 +63,32 @@ public class GameEventListeners implements Listener {
         }
     }
 
+    /**
+     * This even it specifically for when a player is KILLED
+     * rather than when a player dies, being killed can only
+     * occur if you die by TNT from the enemy team exploding
+     * and dealing enough damage to kill you
+     * @param e
+     */
     @EventHandler
-    public void playerDeath(PlayerDeathEvent e){
-
+    public void playerKilled(PlayerDeathEvent e){
+        Player player = e.getPlayer();
+        DamageSource source = e.getDamageSource();
+        if(!(source.getDirectEntity() instanceof TNTPrimed tnt)) return;
+        // cannot use source.getCausingEntity().getName()
+        Optional<Game> optionalGame = TntWarsPlugin.getGameController().getGameByPlayer(player);
+        if(optionalGame.isEmpty()) return;
+        Game game = optionalGame.get();
+        int teamNumber = MapUtils.getTeamRegion(game.getMap(), tnt.getOrigin());
+        if(teamNumber == -1) throw new RuntimeException("Player: " + player.getName() + " died to an explosion fired from outside any team region: " + tnt.getOrigin());
+        Team teamResponsible = game.getTeam(teamNumber);
+        GameStats stats = game.getStats();
+        int teamKills = stats.addTeamKill(teamResponsible);
+        // team out of lives
+        if(teamKills > game.getSettings().getLivesPerTeam()) {
+            game.getStats().setWinningTeam(teamResponsible);
+            TntWarsPlugin.getGameController().endGame(game);
+        }
     }
 
 

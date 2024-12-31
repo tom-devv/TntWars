@@ -9,12 +9,17 @@ public class GameSettings {
 
     private final MapProvider mapProvider;
     private final TeamProvider teamProvider;
+    private int livesPerTeam = 5;
     private int maxPlayers;
     private int minPlayers;
 
     public GameSettings(@NotNull  MapProvider mapProvider, @NotNull TeamProvider teamProvider) {
         this.mapProvider = mapProvider;
         this.teamProvider = teamProvider;
+    }
+
+    public int getLivesPerTeam() {
+        return livesPerTeam;
     }
 
     public TeamProvider getTeamProvider() {

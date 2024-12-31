@@ -15,6 +15,7 @@ public class MapConfig {
     @Comment("This is the name of the map folder inside of map_templates")
     private String mapName;
     private int maxTeams;
+
     @Comment("""
             This is a list of spawn locations for each team, for example if a Map has
             two teams then you should define spawn locations for
@@ -22,18 +23,22 @@ public class MapConfig {
             team because most maps have a max of 10 players, although you can define more
             if you want to increase spawn randomisation for respawns mid game
             """)
-
     private List<TeamSpawnLocations> teamSpawnLocations;
-    @Comment("Two locations which define the centre part, players will not be able to cross over this area")
-    private Point centrePoint1, centrePoint2;
-    @Comment("""
-            These should be the two corners of the map, you should set the Y to -64 and 320
-            the corners create the 'region' the players can play within
-            """)
-    private Point mapExtent1, mapExtent2;
+
+    // Store regions as a nested object with extent and centre
+    @Comment("Map regions including extent and center points")
+    private Region regions;
 
     public String getMapName() {
         return mapName;
+    }
+
+    public Region getRegions() {
+        return regions;
+    }
+
+    public void setRegions(Region regions) {
+        this.regions = regions;
     }
 
     /**
@@ -42,38 +47,6 @@ public class MapConfig {
      */
     public List<TeamSpawnLocations> getTeamSpawnLocations() {
         return Collections.unmodifiableList(teamSpawnLocations);
-    }
-
-    public Point getMapExtent2() {
-        return mapExtent2;
-    }
-
-    public void setMapExtent2(Point mapExtent2) {
-        this.mapExtent2 = mapExtent2;
-    }
-
-    public Point getMapExtent1() {
-        return mapExtent1;
-    }
-
-    public void setMapExtent1(Point mapExtent1) {
-        this.mapExtent1 = mapExtent1;
-    }
-
-    public Point getCentrePoint1() {
-        return centrePoint1;
-    }
-
-    public Point getCentrePoint2() {
-        return centrePoint2;
-    }
-
-    public void setCentrePoint1(Point centrePoint1) {
-        this.centrePoint1 = centrePoint1;
-    }
-
-    public void setCentrePoint2(Point centrePoint2) {
-        this.centrePoint2 = centrePoint2;
     }
 
     public void setTeamSpawnLocations(List<TeamSpawnLocations> teamSpawnLocations) {
@@ -92,18 +65,19 @@ public class MapConfig {
         this.mapName = mapName;
     }
 
-    /**
-     * Creates a default MapConfig instance
-     * @return a default instance for MapConfig
-     */
     public static @NotNull MapConfig defaultMapConfig() {
         MapConfig exampleConfig = new MapConfig();
         exampleConfig.setMapName("example_map");
         exampleConfig.setMaxTeams(2);
-        exampleConfig.setMapExtent1(new MapConfig.Point(-57,-64, -2));
-        exampleConfig.setMapExtent2(new MapConfig.Point(67,321, 54));
-        exampleConfig.setCentrePoint1(new MapConfig.Point(0,0,0));
-        exampleConfig.setCentrePoint2(new MapConfig.Point(0,100,100));
+
+        Region region = new Region(
+                new Point(-57, -64, -2),
+                new Point(67, 321, 54),
+                new Point(0, 0, 0),
+                new Point(0, 100, 100),
+                List.of(new TeamRegion(1, new Point(0,100,10), new Point(0,-64,100)))
+        );
+        exampleConfig.setRegions(region);
 
         TeamSpawnLocations teamOne = new TeamSpawnLocations(1,
                 List.of(
@@ -120,24 +94,118 @@ public class MapConfig {
         return exampleConfig;
     }
 
-    /**
-     * Represents a world-independent location, this is because storing
-     * a Bukkit Location in a config requires a world, worlds for maps
-     * are not known until the map is created
-     */
+    @ConfigSerializable
+    public static class Region {
+        @Comment("The two points defining the extent (boundary) of the map")
+        private Point extent1, extent2;
+
+        @Comment("The two points defining the center area of the map")
+        private Point centre1, centre2;
+
+        private List<TeamRegion> teamRegions;
+
+        public Region(Point extent1, Point extent2, Point centre1, Point centre2, List<TeamRegion> teamRegions) {
+            this.extent1 = extent1;
+            this.extent2 = extent2;
+            this.centre1 = centre1;
+            this.centre2 = centre2;
+            this.teamRegions = teamRegions;
+        }
+
+        public Region() {
+
+        }
+
+        public List<TeamRegion> getTeamRegions() {
+            return this.teamRegions;
+        }
+
+        public void setTeamRegions(List<TeamRegion> teamRegions) {
+            this.teamRegions = teamRegions;
+        }
+
+        public Point getExtent1() {
+            return extent1;
+        }
+
+        public Point getExtent2() {
+            return extent2;
+        }
+
+        public Point getCentre1() {
+            return centre1;
+        }
+
+        public Point getCentre2() {
+            return centre2;
+        }
+
+        public void setExtent2(Point extent2) {
+            this.extent2 = extent2;
+        }
+
+        public void setExtent1(Point extent1) {
+            this.extent1 = extent1;
+        }
+
+        public void setCentre1(Point centre1) {
+            this.centre1 = centre1;
+        }
+
+        public void setCentre2(Point centre2) {
+            this.centre2 = centre2;
+        }
+    }
+
+    @ConfigSerializable
+    public static class TeamRegion {
+        private int teamNumber;
+        private Point p1, p2;
+
+        public TeamRegion(int teamNumber, Point p1, Point p2) {
+            this.teamNumber = teamNumber;
+            this.p1 = p1;
+            this.p2 = p2;
+        }
+
+        public TeamRegion() {}
+
+        public Point getP1() {
+            return p1;
+        }
+
+        public void setP1(Point p1) {
+            this.p1 = p1;
+        }
+
+        public int getTeamNumber() {
+            return teamNumber;
+        }
+
+        public void setTeamNumber(int teamNumber) {
+            this.teamNumber = teamNumber;
+        }
+
+        public Point getP2() {
+            return p2;
+        }
+
+        public void setP2(Point p2) {
+            this.p2 = p2;
+        }
+    }
+
     @ConfigSerializable
     public static class Point {
-        private int x;
-        private int y;
-        private int z;
+        private int x, y, z;
 
-        public Point(int x, int y, int z){
+        public Point(int x, int y, int z) {
             this.x = x;
             this.y = y;
             this.z = z;
         }
 
-        public Point(){}
+        public Point() {}
 
         public int getX() {
             return x;
@@ -164,6 +232,3 @@ public class MapConfig {
         }
     }
 }
-
-
-

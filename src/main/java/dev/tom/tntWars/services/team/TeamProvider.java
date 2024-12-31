@@ -34,7 +34,7 @@ public abstract class TeamProvider {
     protected List<Team> createTeams() {
         List<Team> newTeams = new ArrayList<>();
         for (int i = 0; i < this.teamCount; i++) {
-            newTeams.add(new Team());
+            newTeams.add(new Team(i));
         }
         return newTeams;
     }

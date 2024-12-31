@@ -5,26 +5,27 @@ import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.utils.NameGenerator;
 import org.bukkit.entity.Player;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class Game {
 
     private final String gameId;
     private final GameSettings settings;
-    private final Collection<Team> teams;
+    private final java.util.Map<Integer, Team> teams;
     private Set<UUID> participants = new HashSet<>();
     private Map map;
     private GameState state;
+    private GameStats stats;
 
     public Game(GameSettings settings, Collection<Team> teams){
         this.settings = settings;
-        this.teams = teams;
+        HashMap<Integer, Team> teamMap = new HashMap<>();
+        teams.forEach(team -> teamMap.put(team.getNumber(), team));
+        this.teams = teamMap;
         this.state = GameState.INACTIVE;
         this.gameId = NameGenerator.generateName();
         this.participants = resolveParticipants();
+        this.stats = new GameStats();
     }
 
     public Set<UUID> getParticipants(){
@@ -36,7 +37,8 @@ public class Game {
      */
     private Set<UUID> resolveParticipants() {
         Set<UUID> participants = new HashSet<>();
-        this.teams.forEach(team -> {
+        if(this.teams == null) return participants;
+        this.teams.values().forEach(team -> {
             participants.addAll(team.getPlayerUUIDs());
         });
         return participants;
@@ -76,8 +78,16 @@ public class Game {
         return false;
     }
 
+    public GameStats getStats() {
+        return stats;
+    }
+
+    public Team getTeam(int number){
+        return teams.get(number);
+    }
+
     public Collection<Team> getTeams() {
-        return teams;
+        return teams.values();
     }
 
     public String getGameId() {

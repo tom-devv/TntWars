@@ -10,6 +10,7 @@ import dev.tom.tntWars.controllers.DefaultMapController;
 import dev.tom.tntWars.interfaces.MapController;
 import dev.tom.tntWars.interfaces.GameController;
 import dev.tom.tntWars.interfaces.MapProvider;
+import dev.tom.tntWars.listeners.GameEventListeners;
 import dev.tom.tntWars.models.game.GameSettings;
 import dev.tom.tntWars.services.DefaultMatchmakingService;
 import dev.tom.tntWars.services.map.RandomMapProvider;
@@ -55,6 +56,7 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
         initializeDefaults();
         deleteThisMethod();
         Bukkit.getPluginManager().registerEvents(this, this);
+        Bukkit.getPluginManager().registerEvents(new GameEventListeners(), this);
     }
 
     @EventHandler

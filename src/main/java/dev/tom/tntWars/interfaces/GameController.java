@@ -13,6 +13,12 @@ public interface GameController {
     Optional<Game> findGame(GameSettings settings);
     Game createGame(Collection<Team> teams, GameSettings settings);
     void startGame(Game game);
+
+    /**
+     * A game can be ended forcefully or when a team runs out of lives
+     * TODO this should be changed to when all teams except has no lives left
+     * @param game
+     */
     void endGame(Game game);
     void pauseGame(Game game);
     void resumeGame(Game game);

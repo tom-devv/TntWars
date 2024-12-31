@@ -9,9 +9,10 @@ import java.util.UUID;
 public class Team {
 
     private Set<UUID> playerUUIDs = new HashSet<>();
+    private int number;
 
-    public Team(){
-
+    public Team(int number){
+        this.number = number;
     }
 
     public boolean sameTeam(Player player1, Player player2){
@@ -34,6 +35,9 @@ public class Team {
         playerUUIDs.clear();
     }
 
+    public int getNumber() {
+        return number;
+    }
 
     public Set<UUID> getPlayerUUIDs() {
         return playerUUIDs;
