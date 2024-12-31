@@ -3,5 +3,5 @@ version: ${version}
 main: dev.tom.tntWars.TntWarsPlugin
 api-version: '1.21'
 authors: [ tom ]
-depend:
+soft-depend:
   - PlaceholderAPI

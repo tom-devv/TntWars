@@ -6,6 +6,7 @@ import dev.tom.tntWars.models.game.Game;
 import dev.tom.tntWars.models.game.GameState;
 import dev.tom.tntWars.models.game.GameStats;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,6 +32,12 @@ public class TntPlaceholders extends PlaceholderExpansion {
     }
 
     @Override
+    public boolean persist() {
+        return true;
+    }
+
+
+    @Override
     public @Nullable String onPlaceholderRequest(Player player, @NotNull String params) {
         UUID uuid = player.getUniqueId();
         /**
@@ -43,7 +50,7 @@ public class TntPlaceholders extends PlaceholderExpansion {
         Optional<Team> optionalTeam = game.getTeam(player);
         if(optionalTeam.isEmpty()) return null;
         Team team = optionalTeam.get();
-        Integer teamNumber = team.getNumber();
+        int teamNumber = team.getNumber();
 
         switch (params){
             case "game-id":
@@ -53,7 +60,7 @@ public class TntPlaceholders extends PlaceholderExpansion {
             case "map-name":
                 return game.getMap().getName();
             case "team-number":
-                return teamNumber.toString();
+                return Integer.toString(teamNumber);
             case "team-lives-remaining":
                 return stats.getTeamDeaths().get(team).toString();
             case "team-kills":

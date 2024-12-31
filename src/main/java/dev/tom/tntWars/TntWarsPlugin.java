@@ -13,11 +13,13 @@ import dev.tom.tntWars.interfaces.GameController;
 import dev.tom.tntWars.interfaces.MapProvider;
 import dev.tom.tntWars.listeners.GameEventListeners;
 import dev.tom.tntWars.models.game.GameSettings;
+import dev.tom.tntWars.placeholders.TntPlaceholders;
 import dev.tom.tntWars.services.DefaultMatchmakingService;
 import dev.tom.tntWars.services.map.RandomMapProvider;
 import dev.tom.tntWars.services.team.BalancedTeamProvider;
 import dev.tom.tntWars.services.team.TeamProvider;
 import dev.tom.tntWars.services.world.WorldManager;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -54,6 +56,7 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
     public void onEnable() {
         plugin = this;
         CommandAPI.onEnable();
+        placeholderAPI();
         loadCommands();
         loadMapConfigs();
         initializeDefaults();
@@ -73,9 +76,13 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
         new QueueCommand();
     }
 
+    /**
+     * PlaceholderAPI is a soft dependency so we only register them if
+     * placeholderapi is found
+     */
     private void placeholderAPI(){
         if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-
+            new TntPlaceholders().register();
         }
     }
 
@@ -104,7 +111,7 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
 
 
         randomMapProvider = new RandomMapProvider(worldManager);
-        balancedTeamProvider = new BalancedTeamProvider(2);
+        balancedTeamProvider = new BalancedTeamProvider(1);
 
         matchmakingService = new DefaultMatchmakingService(GameSettings.defaultSettings());
 
