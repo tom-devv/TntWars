@@ -62,6 +62,7 @@ public class DefaultMapController extends Controller<Game, Map> implements MapCo
         World world = map.getWorld();
         File worldFile = world.getWorldFolder();
         Bukkit.unloadWorld(world, false);
+        System.out.println("Deleting world");
         Bukkit.getScheduler().runTaskAsynchronously(TntWarsPlugin.getPlugin(), worldFile::delete);
     }
 

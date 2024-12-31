@@ -108,8 +108,20 @@ public class GameEventListeners implements Listener {
         if(optionalTeam.isEmpty()) {
             throw new RuntimeException("Player: " + deadPlayer + " died but isn't in a team in game: " + game.getGameId());
         }
+        // Should the player be respawned?
         Team deadPlayerTeam = optionalTeam.get();
-        game.getStats().addTeamDeath(deadPlayerTeam);
+        GameStats stats = game.getStats();
+        stats.addTeamDeath(deadPlayerTeam);
+        int livesLeft = game.getSettings().getLivesPerTeam() - stats.getTeamDeaths().get(deadPlayerTeam);
+        if(livesLeft > 0) {
+//            deadPlayer.spigot().respawn(); // force a respawn to skip title screen
+            TntWarsPlugin.getGameController().respawnPlayer(game, deadPlayer);
+            MessageUtil.sendTitle(deadPlayer,
+                    "<green><bold>Respawned!",
+                    "<gray>Your team now has <red>" + livesLeft + "</red> lives remaining</gray>"
+            );
+        }
+
         handleGameDeaths(game);
     }
 
@@ -119,13 +131,6 @@ public class GameEventListeners implements Listener {
      */
     private void handleGameDeaths(Game game){
         GameStats stats = game.getStats();
-        //debug
-        System.out.println("Handling game deaths");
-        stats.getTeamDeaths().forEach((team, integer) -> {
-            System.out.println("Team " + team.getNumber() + " has " + integer + " deaths");
-        });
-
-        //end debug
         List<Team> aliveTeams = new ArrayList<>(game.getTeams()); // assume all teams are alive
         for (Team team : game.getTeams()) {
             Integer teamDeaths = stats.getTeamDeaths().get(team);

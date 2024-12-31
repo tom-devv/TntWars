@@ -72,12 +72,17 @@ public class DefaultMatchmakingService implements MatchmakingService {
 
         Collection<Team> teams = teamProvider.populateTeams(queueClone);
         Game game = TntWarsPlugin.getGameController().createGame(teams, gameSettings);
-        broadcastTimer(queueClone.stream().map(Bukkit::getPlayer).toList(), 5).thenRun(() -> {
-            TntWarsPlugin.getGameController().startGame(game);
-        }).exceptionally(throwable ->  {
-            throwable.printStackTrace();
-            return null;
-        });
+        /**
+         * Start the game with the timer as a future
+         * Allows us to async clone the map during the timer
+         * then run actions once the timer is complete
+         */
+        TntWarsPlugin.getGameController().startGame(game,
+                broadcastTimer(
+                        queueClone.stream().map(Bukkit::getPlayer).toList(),
+                        5
+                )
+        );
     }
 
     /**

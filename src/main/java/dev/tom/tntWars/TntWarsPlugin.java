@@ -73,6 +73,11 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
         new QueueCommand();
     }
 
+    private void placeholderAPI(){
+        if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+
+        }
+    }
 
     private void deleteThisMethod(){
         // This method is not used anywhere in the project

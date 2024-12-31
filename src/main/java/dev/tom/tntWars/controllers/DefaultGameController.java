@@ -19,6 +19,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 public class DefaultGameController extends Controller<UUID, Game> implements GameController {
@@ -38,32 +39,31 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
     }
 
     @Override
-    public void startGame(Game game) {
+    public void startGame(Game game, CompletableFuture<Void> future) {
         GameStartEvent startEvent = new GameStartEvent(game);
         Bukkit.getServer().getPluginManager().callEvent(startEvent);
         if(startEvent.isCancelled()) return;
 
         TntWarsPlugin.getMapController().assignMap(game).thenAcceptAsync(map -> {
+            System.out.println("Cloning map!");
+            future.thenRun(() -> {
+                System.out.println("Future complete, now moving");
+                if(!enoughSpawns(game)) {
+                    throw new RuntimeException("Not enough spawns to start game: " + game.getGameId());
+                } else {
+                    game.setState(GameState.ACTIVE);
+                    // ensure that each participant is added to the instance map
+                    // TODO add robust logging for if a player is already contained in the map
+                    game.getParticipants().forEach(uuid -> {
+                        instances.put(uuid, game);
+                    });
+                    // complete this sync
+                    Bukkit.getScheduler().runTask(TntWarsPlugin.getPlugin(), () -> {
+                        moveTeamsToGame(game);
 
-            if(!enoughSpawns(game)) {
-                throw new RuntimeException("Not enough spawns to start game: " + game.getGameId());
-            } else {
-                game.setState(GameState.ACTIVE);
-
-                // ensure that each participant is added to the instance map
-                // TODO add robust logging for if a player is already contained in the map
-                game.getParticipants().forEach(uuid -> {
-                    instances.put(uuid, game);
-                });
-
-                // complete this sync
-                Bukkit.getScheduler().runTask(TntWarsPlugin.getPlugin(), () -> {
-                    moveTeamsToGame(game);
-
-                });
-            }
-
-
+                    });
+                }
+            });
         }).exceptionally(throwable -> {
             TntWarsPlugin.getPlugin().getLogger().severe("Error starting game (" + game.getGameId() + ") :" + throwable.getMessage());
             return null;
@@ -94,7 +94,7 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
 
     @Override
     public void resumeGame(Game game) {
-
+        game.setState(GameState.ACTIVE);
     }
 
     @Override
@@ -117,15 +117,6 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
     @Override
     public void respawnPlayer(Game game, Player player) {
         game.getTeam(player).ifPresent(team -> {
-
-
-            System.out.println("Respawning");
-            game.getMap().getSpawns().forEach((integer, teamSpawnLocations) -> {
-                System.out.println("Team number: " + integer);
-                System.out.println("Team spawn locations: " + teamSpawnLocations);
-            });
-
-            System.out.println("This team number: " + team.getNumber());
             TeamSpawnLocations spawns = game.getMap().getSpawns().get(team.getNumber());
             spawns.getUnoccupied().spawnPlayer(player, game);
         });

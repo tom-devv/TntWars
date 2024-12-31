@@ -7,12 +7,13 @@ import org.bukkit.entity.Player;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public interface GameController {
 
     Optional<Game> findGame(GameSettings settings);
     Game createGame(Collection<Team> teams, GameSettings settings);
-    void startGame(Game game);
+    void startGame(Game game, CompletableFuture<Void> future);
 
     /**
      * A game can be ended forcefully or when a team runs out of lives

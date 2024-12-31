@@ -4,14 +4,17 @@ plugins {
     id("java")
     id("com.gradleup.shadow") version "9.0.0-beta4"
     id("xyz.jpenilla.run-paper") version "2.3.1"
+
 }
 
 repositories {
     mavenCentral()
     maven {
         name = "papermc"
-        url = uri("https://repo.papermc.io/repository/maven-public/")
+        url = uri("https://repo.papermc.io/repository/maven-public/") // paper
     }
+    maven(url = "https://repo.extendedclip.com/content/repositories/placeholderapi/") //papi
+    maven("https://jitpack.io") // tab
     maven(url = "https://repo.codemc.org/repository/maven-public/")
 }
 
@@ -31,6 +34,13 @@ dependencies {
     // adventure (minimessage)
     implementation("net.kyori:adventure-api:4.18.0")
     implementation("net.kyori:adventure-text-minimessage:4.18.0")
+
+    // tab
+    compileOnly("com.github.NEZNAMY", "TAB-API", "5.0.3")
+
+    //papi
+    compileOnly ("me.clip:placeholderapi:2.11.6")
+
 
     compileOnly("io.papermc.paper:paper-api:${minecraftVersion}-R0.1-SNAPSHOT")
 }

@@ -45,15 +45,15 @@ public class QueueCommand {
                     DefaultMatchmakingService service = TntWarsPlugin.getMatchmakingService();
                     Queue<UUID> queue = service.getQueue();
                     StringBuilder sb = new StringBuilder();
-                    sb.append("<red><bold>---Current Queue</bold></red>");
+                    sb.append("<red><bold>--=Current Queue=--</bold></red>");
                     sb.append("<newline>");
                     queue.forEach(uuid -> {
                         Player queued = Bukkit.getPlayer(uuid);
                         if(queued != null){
-                            sb.append("<bold><green>~ ").append(queued.getName()).append("</bold></green><newline>");
+                            sb.append("<bold><green>").append(queued.getName()).append("</green></bold><newline>");
                         }
                     });
-                    sb.append("</newline>");
+                    sb.append("<red><bold>-------------------</bold></red>");
                     MessageUtil.sendMini(player, sb.toString());
                 });
     }
