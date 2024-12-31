@@ -32,7 +32,7 @@ public class GameStats {
     private int blocksBroken;
     private int tntPlaced;
     private int explosionsTriggered;
-    private long gameDuration; // in milliseconds
+    private long gameStartTimeMillis;
     private Team winningTeam;
 
     // Environmental stats
@@ -61,7 +61,7 @@ public class GameStats {
         this.blocksBroken = 0;
         this.tntPlaced = 0;
         this.explosionsTriggered = 0;
-        this.gameDuration = 0L;
+        this.gameStartTimeMillis = 0L;
         this.winningTeam = null;
         this.environmentalKills = 0;
         this.explosivesRelatedKills = 0;
@@ -249,12 +249,12 @@ public class GameStats {
         this.explosionsTriggered = explosionsTriggered;
     }
 
-    public long getGameDuration() {
-        return gameDuration;
+    public long getGameStartTimeMillis() {
+        return gameStartTimeMillis;
     }
 
-    public void setGameDuration(long gameDuration) {
-        this.gameDuration = gameDuration;
+    public void setGameStartTimeMillis(long gameStartTimeMillis) {
+        this.gameStartTimeMillis = gameStartTimeMillis;
     }
 
     public Team getWinningTeam() {
