@@ -9,6 +9,7 @@ import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.models.game.Game;
 import dev.tom.tntWars.models.game.GameSettings;
 import dev.tom.tntWars.models.game.GameState;
+import dev.tom.tntWars.models.game.GameStats;
 import dev.tom.tntWars.models.map.Map;
 import dev.tom.tntWars.models.map.SpawnLocation;
 import dev.tom.tntWars.models.map.TeamSpawnLocations;
@@ -76,6 +77,11 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
         if(endEvent.isCancelled()) return;
 
         game.setState(GameState.ENDED);
+        game.getPlayers().forEach(player -> {
+            MessageUtil.sendTitle(player,
+                    "<green><bold> Game Over!</green>",
+                    "<gray>Winners: <green>Team: " + game.getStats().getWinningTeam().getNumber() + " </green></gray>");
+        });
         game.getParticipants().forEach(instances::remove); // remove uuid's from instance map
         movePlayersToLobby(game);
         TntWarsPlugin.getMapController().releaseMap(game);
@@ -109,8 +115,24 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
     }
 
     @Override
-    public Optional<Game> getGameByPlayer(Player player) {
+    public void respawnPlayer(Game game, Player player) {
+        game.getTeam(player).ifPresent(team -> {
 
+
+            System.out.println("Respawning");
+            game.getMap().getSpawns().forEach((integer, teamSpawnLocations) -> {
+                System.out.println("Team number: " + integer);
+                System.out.println("Team spawn locations: " + teamSpawnLocations);
+            });
+
+            System.out.println("This team number: " + team.getNumber());
+            TeamSpawnLocations spawns = game.getMap().getSpawns().get(team.getNumber());
+            spawns.getUnoccupied().spawnPlayer(player, game);
+        });
+    }
+
+    @Override
+    public Optional<Game> getGameByPlayer(Player player) {
         UUID uuid = player.getUniqueId();
         Game game = getInstances().get(uuid);
         if(game == null) return Optional.empty();
@@ -127,11 +149,20 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
         return true;
     }
 
+    @Override
+    public void removePlayer(Game game, Player player) {
+        game.getTeam(player).ifPresent(team -> {
+            team.removePlayer(player.getUniqueId());
+            instances.remove(player.getUniqueId());
+            game.getParticipants().remove(player.getUniqueId());
+            player.teleport(TntWarsPlugin.getLobbyLocation());
+        });
+
+    }
+
     private void movePlayersToLobby(Game game){
-        game.getParticipants()
-                .stream().map(Bukkit::getPlayer).filter(Objects::nonNull)
-                .forEach(player -> {
-                    player.teleport(TntWarsPlugin.getLobbyLocation());
+        game.getPlayers().forEach(player -> {
+            player.teleport(TntWarsPlugin.getLobbyLocation());
         });
     }
 
@@ -147,27 +178,19 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
     }
 
     /**
-     * Moves teams to the game by spawning them in their respective slots
+     * Moves teams to the game by "respawning" them
+     * this simply teleports the player to an unoccupied spot
+     * we also send a nice title with the game id
      * @param game
      */
     private void moveTeamsToGame(Game game){
-        List<Team> teams = new ArrayList<>(game.getTeams());
         Map map = game.getMap();
-        World world = map.getWorld();
-
         String title = "<red><bold>TNT Wars has started</bold> </red>";
         String subtitle = "<gray>Map: <red>" + map.getName() + "</red> | ID: <red>" + game.getGameId() +"</red></gray>";
+        game.getPlayers().forEach(player -> {
+            respawnPlayer(game, player);
+            MessageUtil.sendTitle(player, title, subtitle);
+        });
 
-        for (int i = 0; i < teams.size(); i++) {
-            Team team = teams.get(i);
-            TeamSpawnLocations spawns = map.getTeamSpawnLocations().get(i);
-            for (UUID playerUUID : team.getPlayerUUIDs()) {
-                Player player = Bukkit.getPlayer(playerUUID);
-                if (player != null) {
-                    spawns.getUnoccupied().spawnPlayer(player, world);
-                    MessageUtil.sendTitle(player, title, subtitle);
-                }
-            }
-        }
     }
 }

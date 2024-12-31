@@ -5,6 +5,8 @@ import dev.tom.tntWars.config.MapConfigLoader;
 import dev.tom.tntWars.config.MapConfig;
 import org.bukkit.World;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -22,7 +24,11 @@ public class Map {
      * Useful for getting information about this map.
      */
     private final String name;
-    private final List<TeamSpawnLocations> spawns;
+    private final java.util.Map<Integer, TeamSpawnLocations> spawns;
+    /**
+     * This List is just for convenience to get all locations rather than per team
+     */
+    private final List<SpawnLocation> spawnLocations = new ArrayList<>();
     /**
      * This is equivalent to the number of spawn locations available
      */
@@ -43,7 +49,7 @@ public class Map {
 
     private int fetchMaxPlayers(){
         int total = 0;
-        for (TeamSpawnLocations spawn : this.spawns) {
+        for (TeamSpawnLocations spawn : this.spawns.values()) {
             total +=spawn.getLocations().size();
         }
         return total;
@@ -53,13 +59,28 @@ public class Map {
      * Fetch the spawn locations from the preloaded config files and return them.
      * @return a CLONE of the spawn locations as the instance of them is unique to this map instance
      */
-    private List<TeamSpawnLocations> fetchSpawnLocations(){
+    private java.util.Map<Integer, TeamSpawnLocations> fetchSpawnLocations(){
+        java.util.Map<Integer, TeamSpawnLocations> spawnMap = new HashMap<>();
         MapConfig config = MapConfigLoader.getConfig(this.name);
         if(config == null) throw new RuntimeException("Failed to fetch config for map: " + this.name);
-        return MapConfigLoader.cloneSpawnLocations(config.getTeamSpawnLocations());
+        MapConfigLoader.cloneSpawnLocations(config.getTeamSpawnLocations()).forEach(spawn -> {
+            spawnMap.put(spawn.getTeamNumber(), spawn);
+        });
+        return spawnMap;
     }
 
-    public List<TeamSpawnLocations> getTeamSpawnLocations() { return this.spawns; }
+    /**
+     * Reset spawn locations so that they are all usable again
+     */
+    public void setSpawnsUnoccupied(){
+        spawnLocations.forEach(spawn -> {
+            spawn.setOccupied(false);
+        });
+    }
+
+    public java.util.Map<Integer, TeamSpawnLocations> getSpawns() {
+        return spawns;
+    }
 
     public int getMaxPlayers() {
         return maxPlayers;

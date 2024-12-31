@@ -3,15 +3,25 @@ package dev.tom.tntWars.models.game;
 import dev.tom.tntWars.models.map.Map;
 import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.utils.NameGenerator;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Game {
 
     private final String gameId;
     private final GameSettings settings;
-    private final java.util.Map<Integer, Team> teams;
+    /**
+     * Map of player UUID to team
+     */
+    private final java.util.Map<UUID, Team> playerTeams = new HashMap<>();
+    /**
+     * Map of team number to Team
+     */
+    private final java.util.Map<Integer, Team> teams = new HashMap<>();
     private Set<UUID> participants = new HashSet<>();
     private Map map;
     private GameState state;
@@ -19,17 +29,28 @@ public class Game {
 
     public Game(GameSettings settings, Collection<Team> teams){
         this.settings = settings;
-        HashMap<Integer, Team> teamMap = new HashMap<>();
-        teams.forEach(team -> teamMap.put(team.getNumber(), team));
-        this.teams = teamMap;
+        teams.forEach(team -> this.teams.put(team.getNumber(), team));
+        teams.forEach(team -> {
+            team.getPlayerUUIDs().forEach(uuid -> {
+                playerTeams.put(uuid, team);
+            });
+        });
         this.state = GameState.INACTIVE;
         this.gameId = NameGenerator.generateName();
         this.participants = resolveParticipants();
-        this.stats = new GameStats();
+        this.stats = new GameStats(this);
     }
 
     public Set<UUID> getParticipants(){
         return this.participants;
+    }
+
+    /**
+     * Fetch player from participants UUID and removed null players
+     * @return
+     */
+    public Set<Player> getPlayers(){
+        return this.participants.stream().map(Bukkit::getPlayer).filter(Objects::nonNull).collect(Collectors.toSet());
     }
 
     /**
@@ -49,7 +70,7 @@ public class Game {
     }
 
     public void setMap(Map map) {
-        if (this.map != null) {
+        if (this.map != null && map != null) {
             throw new IllegalStateException("Map is already set for this game.");
         }
         this.map = map;
@@ -82,7 +103,23 @@ public class Game {
         return stats;
     }
 
-    public Team getTeam(int number){
+    /**
+     * Get a players team
+     * @param player
+     * @return an optional as the player may not have a team?
+     */
+    public Optional<Team> getTeam(Player player){
+        Team team = playerTeams.get(player.getUniqueId());
+        if(team == null) return Optional.empty();
+        return Optional.of(team);
+    }
+
+    /**
+     * Get a team by its number
+      * @param number
+     * @return the team or null
+     */
+    public @Nullable Team getTeam(int number){
         return teams.get(number);
     }
 

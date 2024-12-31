@@ -2,6 +2,7 @@ package dev.tom.tntWars.models.game;
 
 import dev.tom.tntWars.models.Team;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -40,22 +41,22 @@ public class GameStats {
     private Map<UUID, Integer> fallDamageTaken;
 
     // Empty constructor with default values
-    public GameStats() {
-        this.teamKills = Map.of();
-        this.teamDeaths = Map.of();
-        this.tntUsed = Map.of();
-        this.playerKills = Map.of();
-        this.playerDeaths = Map.of();
-        this.blocksPlaced = Map.of();
-        this.damageDealt = Map.of();
-        this.distanceTraveled = Map.of();
-        this.longestKillDistance = Map.of();
-        this.killStreaks = Map.of();
-        this.playerRespawns = Map.of();
-        this.hitsTaken = Map.of();
-        this.timeAlive = Map.of();
-        this.buttonPressed = Map.of();
-        this.leversFlicked = Map.of();
+    public GameStats(Game game) {
+        this.teamKills = new HashMap<>();
+        this.teamDeaths = new HashMap<>();
+        this.tntUsed = new HashMap<>();
+        this.playerKills = new HashMap<>();
+        this.playerDeaths = new HashMap<>();
+        this.blocksPlaced = new HashMap<>();
+        this.damageDealt = new HashMap<>();
+        this.distanceTraveled = new HashMap<>();
+        this.longestKillDistance = new HashMap<>();
+        this.killStreaks = new HashMap<>();
+        this.playerRespawns = new HashMap<>();
+        this.hitsTaken = new HashMap<>();
+        this.timeAlive = new HashMap<>();
+        this.buttonPressed = new HashMap<>();
+        this.leversFlicked = new HashMap<>();
         this.tntIgnited = 0;
         this.blocksBroken = 0;
         this.tntPlaced = 0;
@@ -64,7 +65,7 @@ public class GameStats {
         this.winningTeam = null;
         this.environmentalKills = 0;
         this.explosivesRelatedKills = 0;
-        this.fallDamageTaken = Map.of();
+        this.fallDamageTaken = new HashMap<>();
     }
 
     public Map<UUID, Integer> getPlayerDeaths() {
@@ -85,14 +86,26 @@ public class GameStats {
      * @return the new amount of kills this team has
      */
     public int addTeamKill(Team team) {
-        Integer current = this.teamKills.get(team);
-        current++;
+        this.teamKills.putIfAbsent(team, 0);
+        int current = this.teamKills.get(team) + 1;
         this.teamKills.put(team, current);
         return current;
     }
 
     public void setTeamKills(Map<Team, Integer> teamKills) {
         this.teamKills = teamKills;
+    }
+
+    /**
+     * Add a death to a team, used for tracking winners and losers
+     * @param team
+     * @return the new death count
+     */
+    public int addTeamDeath(Team team){
+        this.teamDeaths.putIfAbsent(team, 0);
+        int current = this.teamDeaths.get(team) + 1;
+        this.teamDeaths.put(team, current);
+        return current;
     }
 
     public Map<Team, Integer> getTeamDeaths() {
@@ -113,6 +126,11 @@ public class GameStats {
 
     public Map<UUID, Integer> getPlayerKills() {
         return playerKills;
+    }
+
+    public void addPlayerKill(UUID uuid){
+        this.playerKills.putIfAbsent(uuid, 0);
+        this.playerKills.put(uuid, this.playerKills.get(uuid) + 1);
     }
 
     public void setPlayerKills(Map<UUID, Integer> playerKills) {

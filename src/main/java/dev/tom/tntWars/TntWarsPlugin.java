@@ -4,6 +4,7 @@ import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import com.github.javafaker.Faker;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
+import dev.tom.tntWars.commands.QueueCommand;
 import dev.tom.tntWars.config.MapConfigLoader;
 import dev.tom.tntWars.controllers.DefaultGameController;
 import dev.tom.tntWars.controllers.DefaultMapController;
@@ -19,6 +20,7 @@ import dev.tom.tntWars.services.team.TeamProvider;
 import dev.tom.tntWars.services.world.WorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -52,6 +54,7 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
     public void onEnable() {
         plugin = this;
         CommandAPI.onEnable();
+        loadCommands();
         loadMapConfigs();
         initializeDefaults();
         deleteThisMethod();
@@ -61,13 +64,13 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     public void jump(PlayerJumpEvent e){
-        matchmakingService.addPlayerToQueue(e.getPlayer());
-        getLogger().info("Player " + e.getPlayer().getName() + " has joined the queue.");
+        if(e.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.BONE)){
+            matchmakingService.addPlayerToQueue(e.getPlayer());
+        }
     }
 
-    @EventHandler
-    public void sneak(PlayerToggleSneakEvent e){
-        matchmakingService.startGameWithTeams(balancedTeamProvider);
+    private void loadCommands(){
+        new QueueCommand();
     }
 
 

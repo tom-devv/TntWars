@@ -53,7 +53,7 @@ public class DefaultMatchmakingService implements MatchmakingService {
     @Override
     public void removePlayerFromQueue(UUID playerId) {
         queue.remove(playerId);
-        MessageUtil.sendMini(playerId, "<green>You have left the queue.");
+        MessageUtil.sendMini(playerId, "<red>You have left the queue.</red>");
     }
 
     /**

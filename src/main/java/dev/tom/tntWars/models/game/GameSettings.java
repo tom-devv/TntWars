@@ -9,13 +9,22 @@ public class GameSettings {
 
     private final MapProvider mapProvider;
     private final TeamProvider teamProvider;
-    private int livesPerTeam = 5;
+    private int livesPerTeam = 2;
+    private int respawnDelaySeconds = 5;
     private int maxPlayers;
     private int minPlayers;
 
     public GameSettings(@NotNull  MapProvider mapProvider, @NotNull TeamProvider teamProvider) {
         this.mapProvider = mapProvider;
         this.teamProvider = teamProvider;
+    }
+
+    public int getRespawnDelaySeconds() {
+        return respawnDelaySeconds;
+    }
+
+    public void setRespawnDelaySeconds(int respawnDelaySeconds) {
+        this.respawnDelaySeconds = respawnDelaySeconds;
     }
 
     public int getLivesPerTeam() {

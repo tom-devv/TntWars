@@ -16,28 +16,24 @@ public interface GameController {
 
     /**
      * A game can be ended forcefully or when a team runs out of lives
-     * TODO this should be changed to when all teams except has no lives left
      * @param game
      */
     void endGame(Game game);
     void pauseGame(Game game);
     void resumeGame(Game game);
     Game getGameById(String gameId);
-
     /**
      * Checks if Player... is/are in a game
      * @param player player(s) to check
      * @return true if all players are in a game
      */
     boolean isInGame(Player... player);
-
     /**
      * Get a game via a player
      * @param player
      * @return the game if it exists
      */
     Optional<Game> getGameByPlayer(Player player);
-
     /**
      * Checks if two players are in the same game.
      *
@@ -46,5 +42,19 @@ public interface GameController {
      * @return The shared game if both players are in the same game, otherwise empty.
      */
     Optional<Game> getSharedGame(Player player1, Player player2);
+
+    /**
+     * Respawn a player
+     * @param game
+     * @param player
+     */
+    void respawnPlayer(Game game, Player player);
+
+    /**
+     * Gracefully handle removing a player from the game
+     * @param player
+     */
+    void removePlayer(Game game, Player player);
+//    void addPlayer(Player player);
 
 }
