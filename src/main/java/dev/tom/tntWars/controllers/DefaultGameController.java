@@ -15,6 +15,7 @@ import dev.tom.tntWars.models.map.SpawnLocation;
 import dev.tom.tntWars.models.map.TeamSpawnLocations;
 import dev.tom.tntWars.utils.MessageUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.GameRule;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
@@ -44,10 +45,10 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
         Bukkit.getServer().getPluginManager().callEvent(startEvent);
         if(startEvent.isCancelled()) return;
 
+        game.getStats().setGameStartTimeMillis(System.currentTimeMillis());
         TntWarsPlugin.getMapController().assignMap(game).thenAcceptAsync(map -> {
-            System.out.println("Cloning map!");
+            map.getWorld().setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true);
             future.thenRun(() -> {
-                System.out.println("Future complete, now moving");
                 if(!enoughSpawns(game)) {
                     throw new RuntimeException("Not enough spawns to start game: " + game.getGameId());
                 } else {
@@ -60,7 +61,6 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
                     // complete this sync
                     Bukkit.getScheduler().runTask(TntWarsPlugin.getPlugin(), () -> {
                         moveTeamsToGame(game);
-
                     });
                 }
             });
