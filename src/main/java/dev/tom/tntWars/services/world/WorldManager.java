@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
+import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -102,6 +103,18 @@ public class WorldManager {
             Files.copy(source, dest, REPLACE_EXISTING);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public void deleteWorld(World world) {
+        System.out.println("Deleting world");
+        File worldFile = world.getWorldFolder();
+        boolean unload = Bukkit.unloadWorld(world, false);
+        System.out.println("Unload World? " + unload);
+        try {
+            FileUtils.deleteDirectory(worldFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

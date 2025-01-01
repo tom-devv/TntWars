@@ -47,7 +47,6 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
 
         game.getStats().setGameStartTimeMillis(System.currentTimeMillis());
         TntWarsPlugin.getMapController().assignMap(game).thenAcceptAsync(map -> {
-            map.getWorld().setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true);
             future.thenRun(() -> {
                 if(!enoughSpawns(game)) {
                     throw new RuntimeException("Not enough spawns to start game: " + game.getGameId());
@@ -60,6 +59,14 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
                     });
                     // complete this sync
                     Bukkit.getScheduler().runTask(TntWarsPlugin.getPlugin(), () -> {
+                        /**
+                         * Gamerules must be applied sync
+                         * TODO refactor this out somehwere else
+                         */
+                        map.getWorld().setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true);
+                        map.getWorld().setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
+                        map.getWorld().setGameRule(GameRule.DO_MOB_SPAWNING, false);
+                        // spawn teams in!
                         moveTeamsToGame(game);
                     });
                 }

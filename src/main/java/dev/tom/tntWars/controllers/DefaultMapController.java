@@ -6,6 +6,7 @@ import dev.tom.tntWars.interfaces.MapProvider;
 import dev.tom.tntWars.models.game.Game;
 import dev.tom.tntWars.models.map.Map;
 import dev.tom.tntWars.models.game.GameState;
+import dev.tom.tntWars.services.world.WorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -52,19 +53,14 @@ public class DefaultMapController extends Controller<Game, Map> implements MapCo
         for (Player player : map.getWorld().getPlayers()) {
              player.teleport(TntWarsPlugin.getLobbyLocation());
         }
+        System.out.println("Teleported all players out of world");
+        World worldToDelete = map.getWorld();
         instances.remove(game);
+        map.unloadWorld();
         game.setMap(null);
-        deleteMap(map);
+        TntWarsPlugin.getWorldManager().deleteWorld(worldToDelete);
     }
 
-    @Override
-    public void deleteMap(Map map) {
-        World world = map.getWorld();
-        File worldFile = world.getWorldFolder();
-        Bukkit.unloadWorld(world, false);
-        System.out.println("Deleting world");
-        Bukkit.getScheduler().runTaskAsynchronously(TntWarsPlugin.getPlugin(), worldFile::delete);
-    }
 
     @Override
     public int getMapsInUse() {

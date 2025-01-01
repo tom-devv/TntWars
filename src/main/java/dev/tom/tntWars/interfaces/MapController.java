@@ -27,12 +27,6 @@ public interface MapController {
     void releaseMap(Game game);
 
     /**
-     * Deletes the actual Map world files
-     * @param map
-     */
-    void deleteMap(Map map);
-
-    /**
      * @return the number of maps being used by games right now
      */
     int getMapsInUse();

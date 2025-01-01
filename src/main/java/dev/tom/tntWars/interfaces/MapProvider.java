@@ -1,6 +1,7 @@
 package dev.tom.tntWars.interfaces;
 
 import dev.tom.tntWars.models.map.Map;
+import dev.tom.tntWars.services.world.WorldManager;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -11,6 +12,5 @@ import java.util.concurrent.CompletableFuture;
 public interface MapProvider {
 
     CompletableFuture<Map> getMap();
-
 
 }

@@ -1,5 +1,6 @@
 package dev.tom.tntWars.listeners;
 
+import com.mojang.brigadier.Message;
 import dev.tom.tntWars.TntWarsPlugin;
 import dev.tom.tntWars.events.game.GamePlayerDeathEvent;
 import dev.tom.tntWars.events.game.GameEndEvent;
@@ -11,6 +12,8 @@ import dev.tom.tntWars.models.game.GameStats;
 import dev.tom.tntWars.utils.GameUtil;
 import dev.tom.tntWars.utils.MapUtils;
 import dev.tom.tntWars.utils.MessageUtil;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.damage.DamageSource;
@@ -55,7 +58,7 @@ public class GameEventListeners implements Listener {
                 double reboundConstant = 0.5;
                 Vector reboundVelocity = player.getVelocity().normalize().multiply(reboundConstant);
                 player.setVelocity(reboundVelocity);
-                e.setCancelled(true);
+//                e.setCancelled(true);
                 MessageUtil.sendTitle(player.getUniqueId(), "<red><bold>Out of bounds!</bold></red>", "<gray>This part of the map is out of bounds</gray>");
                 return;
             }
@@ -79,19 +82,23 @@ public class GameEventListeners implements Listener {
 
     @EventHandler
     public void playerDeath(PlayerDeathEvent e){
+        e.deathMessage(Component.text("")); // remove default death message
         Player deadPlayer = e.getPlayer();
         DamageSource source = e.getDamageSource();
         GameUtil.getPlayerGame(deadPlayer).ifPresent(game->{
             // player has been killed so update stats of killer team
+            GamePlayerDeathEvent deathEvent;
             if(source.getDirectEntity() instanceof TNTPrimed tnt) {
                 int teamNumber = MapUtils.getTeamRegion(game.getMap(), tnt.getOrigin());
                 if(teamNumber == -1) throw new RuntimeException("Player: " + deadPlayer.getName() + " died to an explosion fired from outside any team region: " + tnt.getOrigin());
                 Team killerTeam = game.getTeam(MapUtils.getTeamRegion(game.getMap(), tnt.getOrigin()));
                 if(killerTeam == null) throw new RuntimeException("Failed to get team for location: " + tnt.getOrigin() + " in game: " + game.getGameId());
                 game.getStats().addTeamKill(killerTeam);
+                deathEvent = new GamePlayerDeathEvent(game, deadPlayer, killerTeam);
                 //TODO handle individual player kill stats using dispenser nbt
+            } else {
+               deathEvent = new GamePlayerDeathEvent(game, deadPlayer, null);
             }
-            GamePlayerDeathEvent deathEvent = new GamePlayerDeathEvent(game, deadPlayer);
             Bukkit.getPluginManager().callEvent(deathEvent);
         });
     }
@@ -109,20 +116,30 @@ public class GameEventListeners implements Listener {
         if(optionalTeam.isEmpty()) {
             throw new RuntimeException("Player: " + deadPlayer + " died but isn't in a team in game: " + game.getGameId());
         }
-        // Should the player be respawned?
+        /**
+         * Update stats
+         */
         Team deadPlayerTeam = optionalTeam.get();
         GameStats stats = game.getStats();
         stats.addTeamDeath(deadPlayerTeam);
+        /**
+         * Respawn
+         */
         int livesLeft = game.getSettings().getLivesPerTeam() - stats.getTeamDeaths().get(deadPlayerTeam);
         if(livesLeft > 0) {
-//            deadPlayer.spigot().respawn(); // force a respawn to skip title screen
             TntWarsPlugin.getGameController().respawnPlayer(game, deadPlayer);
-            MessageUtil.sendTitle(deadPlayer,
-                    "<green><bold>Respawned!",
-                    "<gray>Your team now has <red>" + livesLeft + "</red> lives remaining</gray>"
-            );
+            MessageUtil.sendActionBar(deadPlayer, "<green><bold>Respawned!<reset> <gray>|</gray> <red>" + livesLeft + " lives remaining</red></green>");
         }
-
+        /**
+         * Death message
+         */
+        String killersAppend = e.getKillers() == null ? "<red><bold>has died</red></bold>" : "has been <red><bold>exploded</bold> <red>by Team: " + e.getKillers().getNumber() + "</red>";
+        String deathMessage = "<green><bold>" + deadPlayer.getName() + "</bold> " + killersAppend + " </green>" +
+                "<newline>" +
+                "<green>Team: <red>" + deadPlayerTeam.getNumber() + "</red> has <red><bold>" + livesLeft + "</bold><red> lives remaining</green>";
+        game.applyPlayers(player -> {
+            MessageUtil.sendMini(player, deathMessage);
+        });
         handleGameDeaths(game);
     }
 
@@ -142,7 +159,10 @@ public class GameEventListeners implements Listener {
                 aliveTeams.remove(team);
             }
         }
+        // todo refactor this so below error doesn't happen
         // all but one teams are dead so this team is the winner and the game is over
+        // slight logic error here, if there is only one team playing then upon death
+        // the game will end as there is only one team left
         if(aliveTeams.size() == 1){
             stats.setWinningTeam(aliveTeams.getFirst());
             TntWarsPlugin.getGameController().endGame(game);

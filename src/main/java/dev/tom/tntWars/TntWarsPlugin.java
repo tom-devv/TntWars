@@ -40,6 +40,7 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
 
     private static MapProvider randomMapProvider;
     private static TeamProvider balancedTeamProvider;
+    private static WorldManager worldManager;
 
     private static final Faker faker = new Faker();
 
@@ -104,8 +105,7 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
 
 
     private void initializeDefaults(){
-        WorldManager worldManager = new WorldManager();
-
+        worldManager = new WorldManager();
         gameController = new DefaultGameController(this);
         mapController = new DefaultMapController(this);
 
@@ -154,5 +154,9 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
 
     public static MapController getMapController() {
         return mapController;
+    }
+
+    public static WorldManager getWorldManager() {
+        return worldManager;
     }
 }

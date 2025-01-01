@@ -18,7 +18,7 @@ public class Map {
     /**
      * The world associated with this map.
      */
-    private final World world;
+    private World world;
     /**
      * The name of the map.
      * Useful for getting information about this map.
@@ -76,6 +76,10 @@ public class Map {
         spawnLocations.forEach(spawn -> {
             spawn.setOccupied(false);
         });
+    }
+
+    public void unloadWorld(){
+        this.world = null;
     }
 
     public java.util.Map<Integer, TeamSpawnLocations> getSpawns() {

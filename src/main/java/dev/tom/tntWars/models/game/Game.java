@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class Game {
@@ -112,6 +113,14 @@ public class Game {
         Team team = playerTeams.get(player.getUniqueId());
         if(team == null) return Optional.empty();
         return Optional.of(team);
+    }
+
+    /**
+     * Apply an action over each game member
+     * @param action
+     */
+    public  void applyPlayers(Consumer<Player> action){
+        getPlayers().forEach(action);
     }
 
     /**
