@@ -2,10 +2,12 @@ package dev.tom.tntWars;
 
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import com.github.javafaker.Faker;
+import de.tr7zw.changeme.nbtapi.NBT;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.tom.tntWars.commands.QueueCommand;
-import dev.tom.tntWars.config.MapConfigLoader;
+import dev.tom.tntWars.config.item.ItemsConfigLoader;
+import dev.tom.tntWars.config.map.MapConfigLoader;
 import dev.tom.tntWars.controllers.DefaultGameController;
 import dev.tom.tntWars.controllers.DefaultMapController;
 import dev.tom.tntWars.interfaces.MapController;
@@ -19,19 +21,17 @@ import dev.tom.tntWars.services.map.RandomMapProvider;
 import dev.tom.tntWars.services.team.BalancedTeamProvider;
 import dev.tom.tntWars.services.team.TeamProvider;
 import dev.tom.tntWars.services.world.WorldManager;
-import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.spongepowered.configurate.ConfigurateException;
 
 
-public final class TntWarsPlugin extends JavaPlugin implements Listener {
+public final class TNTWars extends JavaPlugin implements Listener {
 
     private static GameController gameController;
     private static MapController mapController;
@@ -42,9 +42,12 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
     private static TeamProvider balancedTeamProvider;
     private static WorldManager worldManager;
 
+    private static MapConfigLoader mapConfigLoader;
+    private static ItemsConfigLoader itemsConfigLoader;
+
     private static final Faker faker = new Faker();
 
-    private static TntWarsPlugin plugin;
+    private static TNTWars plugin;
 
     private static Location lobbyLocation; //TODO: please remove this and make it a config!
 
@@ -56,10 +59,11 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         plugin = this;
+        preloadNBTApi();
         CommandAPI.onEnable();
         placeholderAPI();
         loadCommands();
-        loadMapConfigs();
+        loadConfigs();
         initializeDefaults();
         deleteThisMethod();
         Bukkit.getPluginManager().registerEvents(this, this);
@@ -93,12 +97,14 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
         lobbyLocation = new Location(world, 0, 200, 0);
     }
 
-    private void loadMapConfigs(){
-        MapConfigLoader mapConfigLoader = new MapConfigLoader(this);
+    private void loadConfigs(){
+        mapConfigLoader = new MapConfigLoader(this);
+        itemsConfigLoader = new ItemsConfigLoader(this);
         try {
             mapConfigLoader.loadAll();
+            itemsConfigLoader.loadAll();
         } catch (ConfigurateException e) {
-            getLogger().severe("Failed to load map configs: " + e.getMessage());
+            getLogger().severe("Failed to load config(s): " + e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -108,13 +114,17 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
         worldManager = new WorldManager();
         gameController = new DefaultGameController(this);
         mapController = new DefaultMapController(this);
-
-
         randomMapProvider = new RandomMapProvider(worldManager);
         balancedTeamProvider = new BalancedTeamProvider(1);
-
         matchmakingService = new DefaultMatchmakingService(GameSettings.defaultSettings());
+    }
 
+    private void preloadNBTApi(){
+        if (!NBT.preloadApi()) {
+            getLogger().warning("NBT-API wasn't initialized properly, disabling the plugin");
+            getPluginLoader().disablePlugin(this);
+            return;
+        }
     }
 
 
@@ -144,7 +154,7 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
         return faker;
     }
 
-    public static TntWarsPlugin getPlugin() {
+    public static TNTWars getPlugin() {
         return plugin;
     }
 
@@ -158,5 +168,13 @@ public final class TntWarsPlugin extends JavaPlugin implements Listener {
 
     public static WorldManager getWorldManager() {
         return worldManager;
+    }
+
+    public static MapConfigLoader getMapConfigLoader() {
+        return mapConfigLoader;
+    }
+
+    public static ItemsConfigLoader getItemsConfigLoader() {
+        return itemsConfigLoader;
     }
 }

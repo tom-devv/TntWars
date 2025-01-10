@@ -1,6 +1,6 @@
 name: ProjectLaz
 version: ${version}
-main: dev.tom.tntWars.TntWarsPlugin
+main: dev.tom.tntWars.TNTWars
 api-version: '1.21'
 authors: [ tom ]
 soft-depend:

@@ -1,12 +1,10 @@
 package dev.tom.tntWars.placeholders;
 
-import dev.tom.tntWars.TntWarsPlugin;
+import dev.tom.tntWars.TNTWars;
 import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.models.game.Game;
-import dev.tom.tntWars.models.game.GameState;
 import dev.tom.tntWars.models.game.GameStats;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -43,7 +41,7 @@ public class TntPlaceholders extends PlaceholderExpansion {
         /**
          * Handle optionals and return early if one isn't found
          */
-        Optional<Game> optionalGame = TntWarsPlugin.getGameController().getGameByPlayer(player.getPlayer());
+        Optional<Game> optionalGame = TNTWars.getGameController().getGameByPlayer(player.getPlayer());
         if(optionalGame.isEmpty()) return null;
         Game game = optionalGame.get();
         GameStats stats = game.getStats();

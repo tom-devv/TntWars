@@ -15,7 +15,10 @@ repositories {
     }
     maven(url = "https://repo.extendedclip.com/content/repositories/placeholderapi/") //papi
     maven("https://jitpack.io") // tab
-    maven(url = "https://repo.codemc.org/repository/maven-public/")
+    maven {
+        name = "CodeMC"
+        url = uri("https://repo.codemc.io/repository/maven-public/")
+    }
 }
 
 
@@ -27,27 +30,18 @@ dependencies {
         exclude(module = "snakeyaml")
     }
     implementation("org.yaml:snakeyaml:1.26")
-
-    // commandapi
-    implementation("dev.jorel:commandapi-bukkit-shade-mojang-mapped:9.7.0")
-
-    // adventure (minimessage)
-    implementation("net.kyori:adventure-api:4.18.0")
+    implementation("dev.jorel:commandapi-bukkit-shade-mojang-mapped:9.7.0") // commandapi
+    implementation("net.kyori:adventure-api:4.18.0") // adventure (minimessage)
     implementation("net.kyori:adventure-text-minimessage:4.18.0")
-
-    // tab
-    compileOnly("com.github.NEZNAMY", "TAB-API", "5.0.3")
-
-    //papi
-    compileOnly ("me.clip:placeholderapi:2.11.6")
-
-
+    implementation("de.tr7zw:item-nbt-api:2.14.1") //nbt
+    compileOnly("com.github.NEZNAMY", "TAB-API", "5.0.3") // tab
+    compileOnly ("me.clip:placeholderapi:2.11.6") //papi
     compileOnly("io.papermc.paper:paper-api:${minecraftVersion}-R0.1-SNAPSHOT")
 }
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(22)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -75,6 +69,7 @@ tasks.shadowJar {
 
 
     relocate("dev.jorel.commandapi", "dev.tom.commandapi")
+    relocate("de.tr7zw.changeme.nbtapi", "dev.tom.nbtapi")
 
 
     destinationDirectory.set(file(wslPath))

@@ -1,4 +1,4 @@
-package dev.tom.tntWars.config;
+package dev.tom.tntWars.config.map;
 
 import dev.tom.tntWars.models.map.SpawnLocation;
 import dev.tom.tntWars.models.map.TeamSpawnLocations;
@@ -13,8 +13,8 @@ import java.util.List;
 public class MapConfig {
 
     @Comment("This is the name of the map folder inside of map_templates")
-    private String mapName;
-    private int maxTeams;
+    private String mapName;// = defaultMapConfig().getMapName();
+    private int maxTeams;// = defaultMapConfig().getMaxTeams();
 
     @Comment("""
             This is a list of spawn locations for each team, for example if a Map has
@@ -23,11 +23,11 @@ public class MapConfig {
             team because most maps have a max of 10 players, although you can define more
             if you want to increase spawn randomisation for respawns mid game
             """)
-    private List<TeamSpawnLocations> teamSpawnLocations;
+    private List<TeamSpawnLocations> teamSpawnLocations;// = defaultMapConfig().getTeamSpawnLocations();
 
     // Store regions as a nested object with extent and centre
     @Comment("Map regions including extent and center points")
-    private Region regions;
+    private Region regions;// = defaultMapConfig().getRegions();
 
     public String getMapName() {
         return mapName;
@@ -64,6 +64,8 @@ public class MapConfig {
     public void setMapName(String mapName) {
         this.mapName = mapName;
     }
+
+    public MapConfig() {}
 
     public static @NotNull MapConfig defaultMapConfig() {
         MapConfig exampleConfig = new MapConfig();

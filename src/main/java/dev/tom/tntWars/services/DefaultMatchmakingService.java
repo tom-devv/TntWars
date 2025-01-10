@@ -1,6 +1,6 @@
 package dev.tom.tntWars.services;
 
-import dev.tom.tntWars.TntWarsPlugin;
+import dev.tom.tntWars.TNTWars;
 import dev.tom.tntWars.interfaces.MatchmakingService;
 import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.models.game.Game;
@@ -37,7 +37,7 @@ public class DefaultMatchmakingService implements MatchmakingService {
         }
         queue.add(playerId);
         MessageUtil.sendMini(playerId, "<green>You have joined the queue. Position: #" + getQueue().size());
-        startGameWithTeams(TntWarsPlugin.getBalancedTeamProvider());
+        startGameWithTeams(TNTWars.getBalancedTeamProvider());
     }
 
     @Override
@@ -71,13 +71,13 @@ public class DefaultMatchmakingService implements MatchmakingService {
         // The matchmaking service has NO IDEA what map is going to be assigned, and it doesn't need to
 
         Collection<Team> teams = teamProvider.populateTeams(queueClone);
-        Game game = TntWarsPlugin.getGameController().createGame(teams, gameSettings);
+        Game game = TNTWars.getGameController().createGame(teams, gameSettings);
         /**
          * Start the game with the timer as a future
          * Allows us to async clone the map during the timer
          * then run actions once the timer is complete
          */
-        TntWarsPlugin.getGameController().startGame(game,
+        TNTWars.getGameController().startGame(game,
                 broadcastTimer(
                         queueClone.stream().map(Bukkit::getPlayer).toList(),
                         5
@@ -112,7 +112,7 @@ public class DefaultMatchmakingService implements MatchmakingService {
                     remainingTime--; // Decrease the time
                 }
             }
-        }.runTaskTimer(TntWarsPlugin.getPlugin(), 0 ,20);
+        }.runTaskTimer(TNTWars.getPlugin(), 0 ,20);
         return future;
     }
 

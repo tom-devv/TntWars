@@ -1,12 +1,9 @@
 package dev.tom.tntWars.controllers;
 
-import dev.tom.tntWars.TntWarsPlugin;
-import org.checkerframework.checker.guieffect.qual.UI;
+import dev.tom.tntWars.TNTWars;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public abstract class Controller<U, T> {
 
@@ -16,9 +13,9 @@ public abstract class Controller<U, T> {
      */
     protected final Map<U, T> instances;
 
-    private final TntWarsPlugin plugin;
+    private final TNTWars plugin;
 
-    public Controller(TntWarsPlugin plugin) {
+    public Controller(TNTWars plugin) {
         this.plugin = plugin;
         instances = new HashMap<>();
     }
@@ -28,7 +25,7 @@ public abstract class Controller<U, T> {
         return instances;
     }
 
-    public TntWarsPlugin getPlugin() {
+    public TNTWars getPlugin() {
         return plugin;
     }
 

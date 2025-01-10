@@ -1,7 +1,7 @@
 package dev.tom.tntWars.controllers;
 
-import com.mojang.brigadier.Message;
-import dev.tom.tntWars.TntWarsPlugin;
+import dev.tom.tntWars.TNTWars;
+import dev.tom.tntWars.config.item.ItemConfig;
 import dev.tom.tntWars.events.game.GameEndEvent;
 import dev.tom.tntWars.events.game.GameStartEvent;
 import dev.tom.tntWars.interfaces.GameController;
@@ -9,23 +9,20 @@ import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.models.game.Game;
 import dev.tom.tntWars.models.game.GameSettings;
 import dev.tom.tntWars.models.game.GameState;
-import dev.tom.tntWars.models.game.GameStats;
 import dev.tom.tntWars.models.map.Map;
-import dev.tom.tntWars.models.map.SpawnLocation;
 import dev.tom.tntWars.models.map.TeamSpawnLocations;
 import dev.tom.tntWars.utils.MessageUtil;
+import dev.tom.tntWars.utils.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
 
 public class DefaultGameController extends Controller<UUID, Game> implements GameController {
 
-    public DefaultGameController(TntWarsPlugin plugin) {
+    public DefaultGameController(TNTWars plugin) {
         super(plugin);
     }
 
@@ -46,7 +43,7 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
         if(startEvent.isCancelled()) return;
 
         game.getStats().setGameStartTimeMillis(System.currentTimeMillis());
-        TntWarsPlugin.getMapController().assignMap(game).thenAcceptAsync(map -> {
+        TNTWars.getMapController().assignMap(game).thenAcceptAsync(map -> {
             future.thenRun(() -> {
                 if(!enoughSpawns(game)) {
                     throw new RuntimeException("Not enough spawns to start game: " + game.getGameId());
@@ -58,7 +55,7 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
                         instances.put(uuid, game);
                     });
                     // complete this sync
-                    Bukkit.getScheduler().runTask(TntWarsPlugin.getPlugin(), () -> {
+                    Bukkit.getScheduler().runTask(TNTWars.getPlugin(), () -> {
                         /**
                          * Gamerules must be applied sync
                          * TODO refactor this out somehwere else
@@ -68,11 +65,12 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
                         map.getWorld().setGameRule(GameRule.DO_MOB_SPAWNING, false);
                         // spawn teams in!
                         moveTeamsToGame(game);
+                        giveItemsToPlayers(game);
                     });
                 }
             });
         }).exceptionally(throwable -> {
-            TntWarsPlugin.getPlugin().getLogger().severe("Error starting game (" + game.getGameId() + ") :" + throwable.getMessage());
+            TNTWars.getPlugin().getLogger().severe("Error starting game (" + game.getGameId() + ") :" + throwable.getMessage());
             return null;
         });
     }
@@ -91,7 +89,7 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
         });
         game.getParticipants().forEach(instances::remove); // remove uuid's from instance map
         movePlayersToLobby(game);
-        TntWarsPlugin.getMapController().releaseMap(game);
+        TNTWars.getMapController().releaseMap(game);
     }
 
     @Override
@@ -153,14 +151,14 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
             team.removePlayer(player.getUniqueId());
             instances.remove(player.getUniqueId());
             game.getParticipants().remove(player.getUniqueId());
-            player.teleport(TntWarsPlugin.getLobbyLocation());
+            player.teleport(TNTWars.getLobbyLocation());
         });
 
     }
 
     private void movePlayersToLobby(Game game){
         game.getPlayers().forEach(player -> {
-            player.teleport(TntWarsPlugin.getLobbyLocation());
+            player.teleport(TNTWars.getLobbyLocation());
         });
     }
 
@@ -189,6 +187,21 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
             respawnPlayer(game, player);
             MessageUtil.sendTitle(player, title, subtitle);
         });
+    }
+
+
+    private void giveItemsToPlayers(Game game){
+        String itemConfigName = "default";
+        ItemConfig config = TNTWars.getItemsConfigLoader().getConfig(itemConfigName);
+        if(config == null) throw new RuntimeException("Couldn't find item config: " + itemConfigName);
+        game.getPlayers().forEach(player -> {
+            config.getParsedItems().forEach(item -> {
+                Util.giveItemsToPlayer(player, item, item.getMaxStackSize());
+            });
+        });
 
     }
+
+
+
 }

@@ -1,10 +1,9 @@
 package dev.tom.tntWars.models.map;
 
-import dev.tom.tntWars.TntWarsPlugin;
+import dev.tom.tntWars.TNTWars;
 import dev.tom.tntWars.models.game.Game;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
@@ -46,7 +45,7 @@ public class SpawnLocation implements Cloneable {
      * @param delaySeconds
      */
     private void freeSpawnWithDelay(int delaySeconds){
-        Bukkit.getScheduler().runTaskLater(TntWarsPlugin.getPlugin(), new Runnable() {
+        Bukkit.getScheduler().runTaskLater(TNTWars.getPlugin(), new Runnable() {
             @Override
             public void run() {
                 setOccupied(false);

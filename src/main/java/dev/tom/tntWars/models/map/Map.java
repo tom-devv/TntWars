@@ -1,8 +1,9 @@
 package dev.tom.tntWars.models.map;
 
 
-import dev.tom.tntWars.config.MapConfigLoader;
-import dev.tom.tntWars.config.MapConfig;
+import dev.tom.tntWars.TNTWars;
+import dev.tom.tntWars.config.map.MapConfigLoader;
+import dev.tom.tntWars.config.map.MapConfig;
 import org.bukkit.World;
 
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ public class Map {
         this.name = name;
         this.spawns = fetchSpawnLocations();
         this.maxPlayers = fetchMaxPlayers();
-        this.mapConfig = MapConfigLoader.getConfig(name);
+        this.mapConfig = TNTWars.getMapConfigLoader().getConfig(name);
         if(this.mapConfig == null) throw new RuntimeException("Failed to fetch config for map: " + name + " is map_name correct?");
     }
 
@@ -61,7 +62,7 @@ public class Map {
      */
     private java.util.Map<Integer, TeamSpawnLocations> fetchSpawnLocations(){
         java.util.Map<Integer, TeamSpawnLocations> spawnMap = new HashMap<>();
-        MapConfig config = MapConfigLoader.getConfig(this.name);
+        MapConfig config = TNTWars.getMapConfigLoader().getConfig(this.name);
         if(config == null) throw new RuntimeException("Failed to fetch config for map: " + this.name);
         MapConfigLoader.cloneSpawnLocations(config.getTeamSpawnLocations()).forEach(spawn -> {
             spawnMap.put(spawn.getTeamNumber(), spawn);

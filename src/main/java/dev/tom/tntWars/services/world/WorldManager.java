@@ -1,6 +1,6 @@
 package dev.tom.tntWars.services.world;
 
-import dev.tom.tntWars.TntWarsPlugin;
+import dev.tom.tntWars.TNTWars;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
@@ -31,7 +31,7 @@ public class WorldManager {
             try {
                 Files.createDirectories(CLONED_MAPS_PATH);
             } catch (IOException e) {
-                TntWarsPlugin.getPlugin(TntWarsPlugin.class).getLogger().severe("Failed to create cloned maps directory: " + e.getMessage());
+                TNTWars.getPlugin(TNTWars.class).getLogger().severe("Failed to create cloned maps directory: " + e.getMessage());
                 throw new RuntimeException(e.getMessage(), e);
             }
         }
@@ -39,7 +39,7 @@ public class WorldManager {
             try {
                 Files.createDirectories(MAP_TEMPLATES_PATH);
             } catch (IOException e) {
-                TntWarsPlugin.getPlugin(TntWarsPlugin.class).getLogger().severe("Failed to create map templates directory: " + e.getMessage());
+                TNTWars.getPlugin(TNTWars.class).getLogger().severe("Failed to create map templates directory: " + e.getMessage());
                 throw new RuntimeException(e.getMessage(), e);
             }
         }
@@ -64,7 +64,7 @@ public class WorldManager {
         }).thenComposeAsync(targetPath -> CompletableFuture.supplyAsync(() -> {
             try {
                 // Sync create the world and return a future
-                return Bukkit.getScheduler().callSyncMethod(TntWarsPlugin.getPlugin(), () -> {
+                return Bukkit.getScheduler().callSyncMethod(TNTWars.getPlugin(), () -> {
                     System.out.println("Cloned world files to: " + targetPath.toString() + "\nCreating world creator now...");
                     WorldCreator worldCreator = new WorldCreator(targetPath.toString());
                     worldCreator.generator(new EmptyChunkGenerator());
@@ -73,12 +73,12 @@ public class WorldManager {
                     return worldCreator.createWorld();
                 }).get(); // blocks main thread waiting for future to complete
             } catch (InterruptedException | ExecutionException e) {
-                TntWarsPlugin.getPlugin(TntWarsPlugin.class).getLogger().severe("Failed to clone world 1 : " + e.getMessage());
+                TNTWars.getPlugin(TNTWars.class).getLogger().severe("Failed to clone world 1 : " + e.getMessage());
                 throw new RuntimeException(e);
             }
         })
         .exceptionally(e -> {
-            TntWarsPlugin.getPlugin(TntWarsPlugin.class).getLogger().severe("Failed to clone world 2: " + e.getMessage());
+            TNTWars.getPlugin(TNTWars.class).getLogger().severe("Failed to clone world 2: " + e.getMessage());
             throw new RuntimeException(e);
         })
         );
@@ -93,7 +93,7 @@ public class WorldManager {
                 });
             }
         }catch (IOException e){
-            TntWarsPlugin.getPlugin(TntWarsPlugin.class).getLogger().severe("Failed to copy world: " + e.getMessage());
+            TNTWars.getPlugin(TNTWars.class).getLogger().severe("Failed to copy world: " + e.getMessage());
             throw new RuntimeException(e.getMessage(), e);
         }
     }
@@ -119,12 +119,12 @@ public class WorldManager {
     }
 
     public static Path getClonedMapsPath() {
-        File pluginDataFolder = TntWarsPlugin.getPlugin().getDataFolder();
+        File pluginDataFolder = TNTWars.getPlugin().getDataFolder();
         return pluginDataFolder.toPath().resolve("cloned_maps"); // This resolves to plugin folder/cloned_maps
     }
 
     public static Path getMapTemplatesPath() {
-        File pluginDataFolder = TntWarsPlugin.getPlugin().getDataFolder();
+        File pluginDataFolder = TNTWars.getPlugin().getDataFolder();
         return pluginDataFolder.toPath().resolve("map_templates");
     }
 }

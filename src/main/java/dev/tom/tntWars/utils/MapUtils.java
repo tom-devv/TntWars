@@ -1,6 +1,6 @@
 package dev.tom.tntWars.utils;
 
-import dev.tom.tntWars.config.MapConfig;
+import dev.tom.tntWars.config.map.MapConfig;
 import dev.tom.tntWars.models.map.Map;
 import org.bukkit.Location;
 

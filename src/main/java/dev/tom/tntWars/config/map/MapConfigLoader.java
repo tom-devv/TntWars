@@ -1,8 +1,8 @@
-package dev.tom.tntWars.config;
+package dev.tom.tntWars.config.map;
 
-import dev.tom.tntWars.TntWarsPlugin;
+import dev.tom.tntWars.TNTWars;
+import dev.tom.tntWars.config.ConfigurationLoader;
 import dev.tom.tntWars.models.map.TeamSpawnLocations;
-import it.unimi.dsi.fastutil.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
@@ -23,14 +23,14 @@ import java.util.List;
  * the MAPS_DIR directory do NOT correlate to the map names. The map name is stored
  * inside the config.
  */
-public class MapConfigLoader {
+public class MapConfigLoader implements ConfigurationLoader<MapConfig> {
 
     private final Path MAPS_DIR;
     private final String EXAMPLE_FILE_NAME = "example_config.yml";
 
     private static HashMap<String, MapConfig> mapConfigs = new HashMap<>();
 
-    public MapConfigLoader(TntWarsPlugin plugin) {
+    public MapConfigLoader(TNTWars plugin) {
         MAPS_DIR = plugin.getDataFolder().toPath().resolve("map_configs");
         if (Files.notExists(MAPS_DIR)) {
             try {
@@ -52,14 +52,15 @@ public class MapConfigLoader {
      * Load all map configurations from the map_configs directory.
      * This is particularly useful for loading all map configurations on plugin startup
      */
+    @Override
     public void loadAll() throws ConfigurateException {
         HashMap<String, MapConfig> configs = new HashMap<>();
         File mapsDir = MAPS_DIR.toFile();
         if (!mapsDir.isDirectory()) return; // never
-        for (File file : mapsDir.listFiles((_, name) -> name.endsWith(".yml"))) {
+        for (File file : mapsDir.listFiles((f, name) -> name.endsWith(".yml"))) {
             if (file.getName().equalsIgnoreCase(EXAMPLE_FILE_NAME)) continue; // skip example file
-            Pair<String, MapConfig> map = loadMapConfig(file);
-            configs.put(map.left(), map.right());
+            MapConfig mapConfig = loadConfig(file);
+            configs.put(mapConfig.getMapName(), mapConfig);
         }
         mapConfigs = configs;
     }
@@ -69,7 +70,8 @@ public class MapConfigLoader {
      * @param file The file to load the map configuration from
      * @return A Pair of the map's name and the MapSpawnLocationsConfig object
      */
-    private Pair<String, MapConfig> loadMapConfig(File file) throws ConfigurateException {
+    @Override
+    public MapConfig loadConfig(File file) throws ConfigurateException {
         YamlConfigurationLoader loader = YamlConfigurationLoader.builder().path(file.toPath()).build();
         ConfigurationNode rootNode = loader.load();
         MapConfig mapConfig = rootNode.get(MapConfig.class);
@@ -79,8 +81,7 @@ public class MapConfigLoader {
         }
 
         // Use map-name as the key
-        String mapName = mapConfig.getMapName();
-        return Pair.of(mapName, mapConfig);
+        return mapConfig;
     }
 
     /**
@@ -111,7 +112,7 @@ public class MapConfigLoader {
      * @param mapName
      * @return The MapSpawnLocationsConfig object for the given map name, or null if it doesn't exist.
      */
-    public static @Nullable MapConfig getConfig(String mapName) {
+    public @Nullable MapConfig getConfig(String mapName) {
         return mapConfigs.get(mapName);
     }
 
