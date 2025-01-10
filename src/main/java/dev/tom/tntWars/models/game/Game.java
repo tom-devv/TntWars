@@ -1,10 +1,13 @@
 package dev.tom.tntWars.models.game;
 
+import dev.tom.tntWars.TNTWars;
 import dev.tom.tntWars.models.map.Map;
 import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.utils.NameGenerator;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -27,6 +30,7 @@ public class Game {
     private Map map;
     private GameState state;
     private GameStats stats;
+    private long epochSeconds = 0;
 
     public Game(GameSettings settings, Collection<Team> teams){
         this.settings = settings;
@@ -40,6 +44,29 @@ public class Game {
         this.gameId = NameGenerator.generateName();
         this.participants = resolveParticipants();
         this.stats = new GameStats(this);
+    }
+
+    // game timer for ending game and placeholder etc
+    public void startTimer(){
+        long maxTimeSeconds = this.settings.getTimeSeconds();
+        Game game = this;
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (epochSeconds >= maxTimeSeconds) {
+                    TNTWars.getGameController().endGame(game);
+                    this.cancel();
+                }
+                if(game.getState() == GameState.ENDED) {
+                    this.cancel();
+                }
+                // don't add time if paused or inactive
+                if(game.getState() == GameState.INACTIVE || game.getState() == GameState.PAUSED) {
+                    return;
+                }
+                epochSeconds++;
+            }
+        }.runTaskTimer(TNTWars.getPlugin(), 0, 20); // run every second
     }
 
     public Set<UUID> getParticipants(){
@@ -146,5 +173,9 @@ public class Game {
 
     public GameSettings getSettings() {
         return settings;
+    }
+
+    public long getSecondsLeft() {
+        return settings.getTimeSeconds() - epochSeconds;
     }
 }

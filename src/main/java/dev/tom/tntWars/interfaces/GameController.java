@@ -4,6 +4,7 @@ import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.models.game.Game;
 import dev.tom.tntWars.models.game.GameSettings;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -14,7 +15,6 @@ public interface GameController {
     Optional<Game> findGame(GameSettings settings);
     Game createGame(Collection<Team> teams, GameSettings settings);
     void startGame(Game game, CompletableFuture<Void> future);
-
     /**
      * A game can be ended forcefully or when a team runs out of lives
      * @param game
@@ -43,19 +43,16 @@ public interface GameController {
      * @return The shared game if both players are in the same game, otherwise empty.
      */
     Optional<Game> getSharedGame(Player player1, Player player2);
-
     /**
      * Respawn a player
      * @param game
      * @param player
      */
     void respawnPlayer(Game game, Player player);
-
     /**
      * Gracefully handle removing a player from the game
      * @param player
      */
     void removePlayer(Game game, Player player);
-//    void addPlayer(Player player);
 
 }

@@ -9,18 +9,21 @@ import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.models.game.Game;
 import dev.tom.tntWars.models.game.GameSettings;
 import dev.tom.tntWars.models.game.GameState;
-import dev.tom.tntWars.models.map.Map;
 import dev.tom.tntWars.models.map.TeamSpawnLocations;
+import dev.tom.tntWars.models.map.Map;
 import dev.tom.tntWars.utils.MessageUtil;
 import dev.tom.tntWars.utils.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class DefaultGameController extends Controller<UUID, Game> implements GameController {
+
+    private final HashMap<World, Game> worldToGame = new HashMap<>();
 
     public DefaultGameController(TNTWars plugin) {
         super(plugin);
@@ -54,8 +57,10 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
                     game.getParticipants().forEach(uuid -> {
                         instances.put(uuid, game);
                     });
+                    worldToGame.put(map.getWorld(), game);
                     // complete this sync
                     Bukkit.getScheduler().runTask(TNTWars.getPlugin(), () -> {
+                        game.startTimer();
                         /**
                          * Gamerules must be applied sync
                          * TODO refactor this out somehwere else
@@ -82,23 +87,30 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
         if(endEvent.isCancelled()) return;
 
         game.setState(GameState.ENDED);
+        Team winners = game.getStats().getWinningTeam();
+        String winningString;
+        if(winners == null) winningString = "No team";
+        else winningString = String.valueOf(winners.getNumber());
         game.getPlayers().forEach(player -> {
             MessageUtil.sendTitle(player,
                     "<green><bold> Game Over!</green>",
-                    "<gray>Winners: <green>Team: " + game.getStats().getWinningTeam().getNumber() + " </green></gray>");
+                    "<gray>Winners: <green>Team: " + winningString + " </green></gray>");
         });
         game.getParticipants().forEach(instances::remove); // remove uuid's from instance map
+        worldToGame.remove(game.getMap().getWorld()); // before map is deleted
         movePlayersToLobby(game);
         TNTWars.getMapController().releaseMap(game);
     }
 
     @Override
     public void pauseGame(Game game) {
+        game.applyPlayers(player -> MessageUtil.sendTitle(player, "<red><bold>Game Paused<reset>", "<gray>The game has been paused!<reset>"));
         game.setState(GameState.PAUSED);
     }
 
     @Override
     public void resumeGame(Game game) {
+        game.applyPlayers(player -> MessageUtil.sendTitle(player, "<green><bold>Game Paused<reset>", "<gray>The game has resumed!<reset>"));
         game.setState(GameState.ACTIVE);
     }
 
@@ -189,7 +201,6 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
         });
     }
 
-
     private void giveItemsToPlayers(Game game){
         String itemConfigName = "default";
         ItemConfig config = TNTWars.getItemsConfigLoader().getConfig(itemConfigName);
@@ -199,9 +210,9 @@ public class DefaultGameController extends Controller<UUID, Game> implements Gam
                 Util.giveItemsToPlayer(player, item, item.getMaxStackSize());
             });
         });
-
     }
 
-
-
+    public HashMap<World, Game> getWorldToGame() {
+        return worldToGame;
+    }
 }

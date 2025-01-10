@@ -13,6 +13,7 @@ public class GameSettings {
     private int respawnDelaySeconds = 5;
     private int maxPlayers;
     private int minPlayers;
+    private int timeSeconds = 60 * 5; // todo config?
 
     public GameSettings(@NotNull  MapProvider mapProvider, @NotNull TeamProvider teamProvider) {
         this.mapProvider = mapProvider;
@@ -41,5 +42,9 @@ public class GameSettings {
 
     public static GameSettings defaultSettings(){
         return new GameSettings(TNTWars.getRandomMapProvider(), TNTWars.getBalancedTeamProvider());
+    }
+
+    public int getTimeSeconds() {
+        return timeSeconds;
     }
 }

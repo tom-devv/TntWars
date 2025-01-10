@@ -63,8 +63,11 @@ public class TntPlaceholders extends PlaceholderExpansion {
                 return stats.getTeamDeaths().get(team).toString();
             case "team-kills":
                 return stats.getTeamKills().get(team).toString();
-/*            case "time-elapsed":
-                return stats.*/
+            case "time-remaining":
+                long secondsLeft = game.getSecondsLeft();
+                long minutes = secondsLeft / 60;
+                long seconds = secondsLeft % 60;
+                return String.format("%02d:%02d", minutes, seconds);
         }
 
         return super.onPlaceholderRequest(player, params);

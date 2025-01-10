@@ -1,6 +1,7 @@
 package dev.tom.tntWars.utils;
 
 import dev.tom.tntWars.config.map.MapConfig;
+import dev.tom.tntWars.models.Team;
 import dev.tom.tntWars.models.map.Map;
 import org.bukkit.Location;
 
@@ -36,6 +37,15 @@ public class MapUtils {
         MapConfig.Point extent1 = config.getRegions().getExtent1();
         MapConfig.Point extent2 = config.getRegions().getExtent2();
         return withinRegion(extent1, extent2, location);
+    }
+
+    public static boolean withinTeamRegion(Location location, Map map, Team team){
+        MapConfig config = map.getConfig();
+        MapConfig.TeamRegion region = config.getRegions().getTeamRegions().get(team.getNumber());
+        if(region == null) return false;
+        MapConfig.Point p1 = region.getP1();
+        MapConfig.Point p2 = region.getP2();
+        return withinRegion(p1, p2, location);
     }
 
     public static boolean withinRegion(MapConfig.Point p1, MapConfig.Point p2, Location location) {

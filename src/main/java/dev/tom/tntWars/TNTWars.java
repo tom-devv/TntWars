@@ -5,6 +5,7 @@ import com.github.javafaker.Faker;
 import de.tr7zw.changeme.nbtapi.NBT;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
+import dev.tom.tntWars.commands.GameCommand;
 import dev.tom.tntWars.commands.QueueCommand;
 import dev.tom.tntWars.config.item.ItemsConfigLoader;
 import dev.tom.tntWars.config.map.MapConfigLoader;
@@ -79,6 +80,7 @@ public final class TNTWars extends JavaPlugin implements Listener {
 
     private void loadCommands(){
         new QueueCommand();
+        new GameCommand();
     }
 
     /**

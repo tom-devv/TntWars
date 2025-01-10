@@ -1,6 +1,7 @@
 package dev.tom.tntWars.listeners;
 
 import dev.tom.tntWars.TNTWars;
+import dev.tom.tntWars.config.map.MapConfig;
 import dev.tom.tntWars.events.game.GamePlayerDeathEvent;
 import dev.tom.tntWars.events.game.GameEndEvent;
 import dev.tom.tntWars.events.game.GameStartEvent;
@@ -21,6 +22,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -60,7 +62,6 @@ public class GameEventListeners implements Listener {
             if (MapUtils.withinCentreDivide(game.getMap(), to)) {
                 e.setCancelled(true);
                 MessageUtil.sendTitle(player.getUniqueId(), "<red><bold>Out of bounds!</bold></red>", "<gray>This part of the map is out of bounds</gray>");
-                return;
             }
         });
     }
@@ -180,9 +181,29 @@ public class GameEventListeners implements Listener {
     public void blockPlace(BlockPlaceEvent e){
         GameUtil.getPlayerGame(e.getPlayer()).ifPresent(game-> {
             Player player = e.getPlayer();
+
+            // replenish placed blocks, infinite now!
             ItemStack item = e.getItemInHand();
-            item.setAmount(item.getAmount()); // replenish placed blocks, infinite now!
+            item.setAmount(item.getAmount());
             player.getInventory().setItemInMainHand(item);
+
+            //prevent placing outside of team territory
+            Location where = e.getBlock().getLocation();
+            game.getTeam(player).ifPresent(team -> {
+                boolean within = MapUtils.withinTeamRegion(where, game.getMap(), team);
+                if(!within) e.setCancelled(true);
+            });
+        });
+    }
+
+    @EventHandler
+    public void blockBreak(BlockBreakEvent e) {
+        GameUtil.getPlayerGame(e.getPlayer()).ifPresent(game-> {
+            Location where = e.getBlock().getLocation();
+            game.getTeam(e.getPlayer()).ifPresent(team -> {
+                boolean within = MapUtils.withinTeamRegion(where, game.getMap(), team);
+                if (!within) e.setCancelled(true);
+            });
         });
     }
 
